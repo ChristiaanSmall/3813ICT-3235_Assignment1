@@ -1,0 +1,19 @@
+<div class="container">
+    <h1>Dashboard</h1>
+  
+    <div *ngIf="role === 'Super Admin'">
+      <p>Welcome, Super Admin!</p>
+      <!-- Super Admin specific features here -->
+    </div>
+  
+    <div *ngIf="role === 'Group Admin'">
+      <p>Welcome, Group Admin!</p>
+      <!-- Group Admin specific features here -->
+    </div>
+  
+    <div *ngIf="role === 'User'">
+      <p>Welcome, User!</p>
+      <!-- User specific features here -->
+    </div>
+  </div>
+  
