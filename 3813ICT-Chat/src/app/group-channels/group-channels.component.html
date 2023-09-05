@@ -1,0 +1,26 @@
+<div class="container">
+    <h1>Channels in Selected Group</h1>
+    <ul>
+      <li *ngFor="let channel of channels">{{ channel }}</li>
+    </ul>
+    
+    <!-- Super Admin Controls -->
+    <div *ngIf="role === 'Super Admin'">
+      <h2>Super Admin Controls</h2>
+      <input type="text" placeholder="Username" [(ngModel)]="newUsername">
+      <button (click)="addUserToGroup()">Add User</button>
+      <input type="text" placeholder="Username" [(ngModel)]="promoteUsername">
+      <button (click)="promoteToGroupAdmin()">Promote to Group Admin</button>
+      <p>{{ addUserMessage }}</p>
+      <p>{{ promoteUserMessage }}</p>
+    </div>
+  
+    <!-- List of Users in the Group -->
+    <div *ngIf="usersInGroup.length">
+      <h2>Users in the Group</h2>
+      <ul>
+        <li *ngFor="let user of usersInGroup">{{ user.username }}</li>
+      </ul>
+    </div>
+  </div>
+  

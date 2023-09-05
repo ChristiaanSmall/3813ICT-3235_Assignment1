@@ -1,19 +1,41 @@
 <div class="container">
-    <h1>Dashboard</h1>
-  
-    <div *ngIf="role === 'Super Admin'">
-      <p>Welcome, Super Admin!</p>
-      <!-- Super Admin specific features here -->
-    </div>
-  
-    <div *ngIf="role === 'Group Admin'">
-      <p>Welcome, Group Admin!</p>
-      <!-- Group Admin specific features here -->
-    </div>
-  
-    <div *ngIf="role === 'User'">
-      <p>Welcome, User!</p>
-      <!-- User specific features here -->
-    </div>
+  <h1>Dashboard</h1>
+
+  <!-- UI for Super Admin -->
+  <div *ngIf="role === 'Super Admin'">
+    <h3>Super Admin Controls</h3>
+    <input type="text" placeholder="New Group Name" [(ngModel)]="newGroupName">
+    <button (click)="createGroup()">Create Group</button>
+    <input type="text" placeholder="Group ID to Add Admin" [(ngModel)]="selectedGroupId">
+    <button (click)="addAdminToGroup()">Add Admin to Group</button>
   </div>
-  
+
+  <!-- UI for Group Admin -->
+  <div *ngIf="role === 'Group Admin'">
+    <h3>Group Admin Controls</h3>
+    <input type="text" placeholder="New Group Name" [(ngModel)]="newGroupName">
+    <button (click)="createGroup()">Create Group</button>
+    <input type="text" placeholder="New Channel Name" [(ngModel)]="newChannelName">
+    <button (click)="createChannel()">Create Channel</button>
+    <input type="text" placeholder="Group ID to Add User" [(ngModel)]="selectedGroupId">
+    <button (click)="addUserToGroup()">Add User to Group</button>
+  </div>
+
+  <!-- UI for User -->
+  <div *ngIf="role === 'User'">
+    <h3>User Controls</h3>
+    <!-- User-specific controls can go here -->
+  </div>
+  <h4>Your Groups</h4>
+  <ul>
+    <li *ngFor="let group of groups">
+      {{ group.name }}
+      <a [routerLink]="['/group-channels', group.id]">Select</a>
+    </li>
+  </ul>
+
+  <h4>Channels in Selected Group</h4>
+  <ul>
+    <li *ngFor="let channel of channels">{{ channel }}</li>
+  </ul>
+</div>

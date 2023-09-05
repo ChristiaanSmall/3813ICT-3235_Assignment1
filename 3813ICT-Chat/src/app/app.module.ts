@@ -7,13 +7,15 @@ import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
 import { ChatWindowComponent } from './chat-window/chat-window.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { GroupChannelsComponent } from './group-channels/group-channels.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     ChatWindowComponent,
-    DashboardComponent
+    DashboardComponent,
+    GroupChannelsComponent
   ],
   imports: [
     BrowserModule,
