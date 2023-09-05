@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AuthService } from '../auth.service';  // Don't forget to import AuthService
 
 @Component({
   selector: 'app-dashboard',
@@ -7,12 +8,32 @@ import { Component, OnInit } from '@angular/core';
 })
 export class DashboardComponent implements OnInit {
   role: string;
+  newGroupName: string = '';  // For storing the new group name
+  newChannelName: string = '';  // For storing the new channel name
+  selectedGroupId: string = '';  // For storing the selected group ID
 
-  constructor() {
-    // This is just an example. In a real-world application, the role would be fetched from the user's authentication data.
-    this.role = 'Super Admin'; // or 'Group Admin' or 'User'
+  constructor(private authService: AuthService) {  // Inject AuthService
+    const currentUser = this.authService.getCurrentUser();
+    this.role = currentUser ? currentUser.role : '';
   }
 
   ngOnInit(): void {
+  }
+
+  // Method stubs for UI actions, to be filled in
+  createGroup() {
+    // TODO: Implement
+  }
+
+  addUserToGroup() {
+    // TODO: Implement
+  }
+
+  addAdminToGroup() {
+    // TODO: Implement
+  }
+
+  createChannel() {
+    // TODO: Implement
   }
 }

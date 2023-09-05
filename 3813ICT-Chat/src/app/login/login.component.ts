@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -10,14 +11,14 @@ export class LoginComponent {
   username = '';
   password = '';
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   onLogin(): void {
-    const role = this.authService.authenticate(this.username, this.password);
-    if (role) {
-      // Navigate to dashboard
+    const user = this.authService.authenticate(this.username, this.password);
+    if (user) {
+      this.router.navigate(['/dashboard']);
     } else {
-      // Show error message
+      alert('Invalid credentials');
     }
   }
 }
