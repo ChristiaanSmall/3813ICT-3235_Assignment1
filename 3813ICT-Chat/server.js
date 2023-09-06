@@ -132,17 +132,17 @@ app.post('/api/groups/:id/users', (req, res) => {
 app.post('/api/groups/:id/admins', (req, res) => {
   console.log(`Received request to promote user to admin in group ID: ${req.params.id}`);
   const { adminId } = req.body;
-  
+
   // Find the group
   const groupIndex = groups.findIndex(g => g.id === req.params.id);
-  
+
   if (groupIndex !== -1) {
     // Check if user is already an admin in the group
     if (groups[groupIndex].admins.includes(adminId)) {
       res.status(400).json({ message: 'User is already an admin' });
       return;
     }
-    
+
     // Check if user is a member in the group
     if (!groups[groupIndex].members.includes(adminId) && !groups[groupIndex].admins.includes(adminId)) {
       res.status(400).json({ message: 'User is not in the group' });
@@ -156,7 +156,13 @@ app.post('/api/groups/:id/admins', (req, res) => {
       groups[groupIndex].members.splice(index, 1);
     }
 
-    res.json({ message: 'User promoted to admin', group: groups[groupIndex] });
+    // Find the user and update their role
+    const userIndex = users.findIndex(user => user.id === adminId);
+    if (userIndex !== -1) {
+      users[userIndex].role = 'Group Admin';
+    }
+
+    res.json({ message: 'User promoted to admin and role updated', group: groups[groupIndex] });
   } else {
     res.status(404).json({ message: 'Group not found' });
   }
