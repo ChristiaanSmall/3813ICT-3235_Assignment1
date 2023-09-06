@@ -33,6 +33,14 @@
       <a [routerLink]="['/group-channels', group.id]">Select</a>
     </li>
   </ul>
+  
+  <h4>Other Groups</h4>
+  <ul>
+    <li *ngFor="let group of otherGroups">
+      {{ group.name }}
+      <button (click)="requestAccess(group.id)">Request Access</button>
+    </li>
+  </ul>
 
   <h4>Channels in Selected Group</h4>
   <ul>

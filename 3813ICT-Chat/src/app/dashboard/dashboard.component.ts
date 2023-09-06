@@ -15,6 +15,7 @@ export class DashboardComponent implements OnInit {
   selectedGroupId: string = '';
   currentUserId: string = '';
   groups: any[] = [];
+  otherGroups: any[] = [];
   channels: string[] = [];
   subscriptions: Subscription[] = [];
 
@@ -24,35 +25,55 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Retrieve user information from sessionStorage
     const authenticated = sessionStorage.getItem('authenticated');
-
     if (authenticated === 'true') {
-      // User is authenticated, retrieve user data from sessionStorage
       const userData = sessionStorage.getItem('user');
       if (userData) {
         const user = JSON.parse(userData);
         this.role = user.role;
         this.currentUserId = user.id;
-        console.log("role:", this.role);
-      } else {
-        // Handle the case where user data is missing
-        console.log('User data is missing in sessionStorage.');
       }
     } else {
-      // User is not authenticated, handle as needed
       console.log('User is not authenticated.');
-      // You can redirect the user to the login page or handle it accordingly.
     }
 
-    // Fetch groups
     this.subscriptions.push(
-      this.authService.getGroups().subscribe(groups => {
-        this.groups = groups;
+      this.authService.getGroups().subscribe(allGroups => {
+        this.groups = allGroups.filter(group => this.isUserInGroup(group));
+        this.otherGroups = allGroups.filter(group => !this.isUserInGroup(group));
+        console.log('groups:', this.groups);
+        console.log('otherGroups:', this.otherGroups);
+
+        if (this.groups.length === 0 && this.otherGroups.length === 0) {
+          alert("There are no groups.");
+        } else if (this.groups.length === 0) {
+          alert("You are not a member of any group.");
+        }
       })
     );
   }
-
+  requestAccess(groupId: string): void {
+    console.log('Requesting access for group ID:', groupId);
+    // Logic to request access
+  }
+  isUserInGroup(group: any): boolean {
+    console.log('Checking if user is in group:', group);
+    console.log('Current User ID:', this.currentUserId);
+  
+    if (this.role === 'Super Admin') {
+      console.log('User is a Super Admin, has access to all groups.');
+      return true;
+    }
+  
+    const isInUsers = group.members && Array.isArray(group.members) && group.members.includes(this.currentUserId);
+    const isInAdmins = group.admins && Array.isArray(group.admins) && group.admins.includes(this.currentUserId);
+  
+    const condition = isInUsers || isInAdmins;
+  
+    console.log('Condition evaluated to:', condition);
+  
+    return condition;
+  }
   updateChannels(): void {
     this.subscriptions.push(
       this.authService.getChannels(this.selectedGroupId).subscribe(channels => {
