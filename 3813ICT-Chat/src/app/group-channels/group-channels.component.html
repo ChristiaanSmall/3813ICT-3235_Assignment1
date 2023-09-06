@@ -4,8 +4,8 @@
     <li *ngFor="let channel of channels">{{ channel }}</li>
   </ul>
   
-  <div *ngIf="isUserAdminInGroup">
-    <!-- Super Admin Controls -->
+  <div *ngIf="isUserAdminInGroup()">
+    <!-- Admin Controls -->
     <h2>Admin Controls</h2>
     <input type="text" placeholder="Username" [(ngModel)]="newUsername">
     <button (click)="addUserToGroup()">Add User</button>

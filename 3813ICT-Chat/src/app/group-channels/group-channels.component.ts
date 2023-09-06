@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../auth.service';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 interface UserGroup {
   admins: string[];
@@ -14,7 +12,6 @@ interface UserGroup {
   templateUrl: './group-channels.component.html',
   styleUrls: ['./group-channels.component.css']
 })
-
 export class GroupChannelsComponent implements OnInit {
   groupId!: string;
   channels: string[] = [];
@@ -27,7 +24,8 @@ export class GroupChannelsComponent implements OnInit {
   allUsers: any[] = [];
   newChannelName: string = '';
   addChannelMessage: string = '';
-  groups: any[] = []; // Define groups property
+  groups: any[] = [];
+  currentUser: any = null; // Declare a class property to store the current user
 
   constructor(private route: ActivatedRoute, private authService: AuthService) { }
 
@@ -67,7 +65,7 @@ export class GroupChannelsComponent implements OnInit {
           this.updateUsersInGroup();
         }
       );
-    }); // Closing for ngOnInit
+    });
   }
 
   addUserToGroup() {
@@ -127,33 +125,31 @@ export class GroupChannelsComponent implements OnInit {
       }
     }
   }
-// Declare a class property to store the current user
-currentUser: any = null;
 
-isUserAdminInGroup(): boolean {
+  isUserAdminInGroup(): boolean {
     // Check if the current user is already available
     if (this.currentUser) {
-        const currentUserId = this.currentUser.id;
-        const group = this.groups.find((g) => g.id === this.groupId);
-        const isSuperAdmin = this.role === 'Super Admin';
+      const currentUserId = this.currentUser.id;
+      const group = this.groups.find((g) => g.id === this.groupId);
+      const isSuperAdmin = this.role === 'Super Admin';
 
-        // Check if the current user is a Super Admin or an Admin in the group
-        return isSuperAdmin || (group?.admins.includes(currentUserId) || false);
+      // Check if the current user is a Super Admin or an Admin in the group
+      return isSuperAdmin || (group?.admins.includes(currentUserId) || false);
     }
 
     // Subscribe to getCurrentUser only if the current user is not available
     this.authService.getCurrentUser().subscribe((user) => {
-        if (user) {
-            this.currentUser = user;
-            const currentUserId = user.id;
+      if (user) {
+        this.currentUser = user;
+        const currentUserId = user.id;
 
-            // Add a console log here
-            console.log(`Current User ID: ${currentUserId}`);
-        }
+        // Add a console log here
+        console.log(`Current User ID: ${currentUserId}`);
+      }
     });
 
     return false;
-}
+  }
 
   updateUsersInGroup() {
     console.log(`Updating users for group ID: ${this.groupId}`);
@@ -193,8 +189,8 @@ isUserAdminInGroup(): boolean {
       this.authService.addChannelToGroup(this.newChannelName, this.groupId).subscribe(
         response => {
           this.addChannelMessage = `Channel ${this.newChannelName} created successfully.`;
-          this.channels.push(this.newChannelName); // Add the new channel to the local channels array
-          this.newChannelName = ''; // Clear the input field
+          this.channels.push(this.newChannelName);
+          this.newChannelName = '';
         },
         error => {
           this.addChannelMessage = 'Failed to create the channel.';
@@ -202,5 +198,4 @@ isUserAdminInGroup(): boolean {
       );
     }
   }
-
 }
