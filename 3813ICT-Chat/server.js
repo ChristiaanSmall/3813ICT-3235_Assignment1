@@ -82,7 +82,10 @@ app.get('/api/groups/:id/users', (req, res) => {
     res.status(404).json({ message: 'Group not found' });
   }
 });
-
+// Get all users
+app.get('/api/users', (req, res) => {
+  res.json(users);
+});
 // Create Group
 app.post('/api/createGroup', (req, res) => {
   const { groupName, adminId } = req.body;
@@ -98,7 +101,28 @@ app.post('/api/createGroup', (req, res) => {
   res.json({ message: 'Group created', group: newGroup });
 });
 
-// Existing routes...
+// Add User to Group
+app.post('/api/groups/:id/users', (req, res) => {
+  console.log(`Received request to add user to group ID: ${req.params.id}`);
+  const { userId } = req.body;
+  
+  // Find the group
+  const groupIndex = groups.findIndex(g => g.id === req.params.id);
+  
+  if (groupIndex !== -1) {
+    // Check if user is already a member or an admin in the group
+    if (groups[groupIndex].members.includes(userId) || groups[groupIndex].admins.includes(userId)) {
+      res.status(400).json({ message: 'User already in group' });
+      return;
+    }
+    
+    // Add user to group members
+    groups[groupIndex].members.push(userId);
+    res.json({ message: 'User added to group', group: groups[groupIndex] });
+  } else {
+    res.status(404).json({ message: 'Group not found' });
+  }
+});
 
 // Start the server
 app.listen(PORT, () => {

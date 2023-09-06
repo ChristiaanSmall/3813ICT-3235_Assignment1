@@ -20,7 +20,10 @@ export class AuthService {
   getCurrentUser(): Observable<any> {
     return this.http.get(`${this.apiUrl}/currentUser`);
   }
-
+  // AuthService
+  getRoleFromSession(): string {
+    return sessionStorage.getItem('role') || '';
+  }
   getGroups(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/groups`);
   }
