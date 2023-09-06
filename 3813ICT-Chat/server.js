@@ -226,6 +226,46 @@ app.post('/api/groups/removeRequest', (req, res) => {
     res.status(404).json({ status: 'Group not found' });
   }
 });
+// Remove a user from a group
+app.delete('/api/groups/:groupId/users/:userId', (req, res) => {
+  const { groupId, userId } = req.params;
+  const group = groups.find(g => g.id === groupId);
+
+  if (!group) {
+    return res.status(404).json({ message: 'Group not found' });
+  }
+
+  const adminIndex = group.admins.findIndex(u => u === userId);
+  const memberIndex = group.members.findIndex(u => u === userId);
+  
+  if (adminIndex === -1 && memberIndex === -1) {
+    return res.status(404).json({ message: 'User not found in group' });
+  }
+
+  if (adminIndex !== -1) {
+    group.admins.splice(adminIndex, 1);
+  }
+
+  if (memberIndex !== -1) {
+    group.members.splice(memberIndex, 1);
+  }
+
+  res.status(200).json({ message: 'User removed from group' });
+});
+
+// API to delete a group
+app.delete('/api/groups/:groupId', (req, res) => {
+  const groupId = req.params.groupId;
+  const groupIndex = groups.findIndex(g => g.id === groupId);
+
+  if (groupIndex !== -1) {
+    groups.splice(groupIndex, 1);
+    res.json({ message: 'Group deleted successfully' });
+  } else {
+    res.status(404).json({ message: 'Group not found' });
+  }
+});
+
 // Redirect all other routes to Angular app
 app.get('/*', function(req, res) {
   res.sendFile(path.join(cPath, 'index.html'));

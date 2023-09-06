@@ -14,20 +14,27 @@
     <p>{{ addUserMessage }}</p>
     <p>{{ promoteUserMessage }}</p>
   </div>
+  <button *ngIf="isUserAdminInGroup()" (click)="deleteGroup()">Delete Group</button>
+
 
   <!-- List of Users in the Group -->
   <div *ngIf="usersInGroup.admins.length > 0 || usersInGroup.members.length > 0">
     <h2>Admins</h2>
     <ul>
-      <li *ngFor="let admin of usersInGroup.admins">{{ admin }}</li>
+      <li *ngFor="let admin of usersInGroup.admins"> 
+        {{ admin }}
+        <button *ngIf="isUserAdminInGroup()" (click)="removeUserFromGroup(admin)">Ban</button> 
+      </li>
     </ul>
     
     <!-- Members -->
     <h2>Members</h2>
     <ul>
-      <li *ngFor="let member of usersInGroup.members">{{ member }}</li>
+      <li *ngFor="let member of usersInGroup.members"> 
+        {{ member }}
+        <button *ngIf="isUserAdminInGroup()" (click)="removeUserFromGroup(member)">Ban</button> 
+      </li>
     </ul>
-  </div>
 
   <div *ngIf="isUserAdminInGroup()">
     <h4>Pending Group Access Requests</h4>

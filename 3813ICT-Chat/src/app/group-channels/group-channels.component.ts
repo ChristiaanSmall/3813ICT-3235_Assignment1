@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { Subscription } from 'rxjs';
+import { Router } from '@angular/router';
 
 interface UserGroup {
   admins: string[];
@@ -32,7 +33,7 @@ export class GroupChannelsComponent implements OnInit {
 
   currentUser: any = null; // Declare a class property to store the current user
 
-  constructor(private route: ActivatedRoute, private authService: AuthService) { }
+  constructor(private authService: AuthService, private router: Router, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
     // Retrieve role from sessionStorage
@@ -49,7 +50,7 @@ export class GroupChannelsComponent implements OnInit {
       console.log('User is not authenticated.');
     }
   
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params: any) => {
       this.groupId = params['groupId'];
       this.authService.getGroups().subscribe(
         (groups: any[]) => {
@@ -106,6 +107,7 @@ export class GroupChannelsComponent implements OnInit {
       );
     });
   }
+  
   approveRequest(requestId: string) {
     // Fetch user data by ID and replace the requestId with the user's name
     this.authService.getUserById(requestId).subscribe((user: any) => {
@@ -126,6 +128,39 @@ export class GroupChannelsComponent implements OnInit {
         }
       }
     });
+  }
+  deleteGroup() {
+    if (this.groupId) {
+      this.authService.deleteGroup(this.groupId).subscribe(
+        response => {
+          console.log('Group deleted successfully.');
+          this.router.navigate(['/dashboard']); // Navigate to dashboard
+        },
+        error => {
+          console.error(`Failed to delete the group: ${JSON.stringify(error)}`);
+        }
+      );
+    }
+  }
+  
+  removeUserFromGroup(username: string) {
+    const user = this.allUsers.find(u => u.username === username);
+    if (user) {
+      if (this.usersInGroup.members.includes(username) || this.usersInGroup.admins.includes(username)) {
+        this.authService.removeUserFromGroup(user.id, this.groupId).subscribe(
+          response => {
+            this.updateUsersInGroup();
+          },
+          error => {
+            console.error(`Failed to remove user: ${JSON.stringify(error)}`);
+          }
+        );
+      } else {
+        console.log(`User ${username} is not in the group.`);
+      }
+    } else {
+      console.log('User not found.');
+    }
   }
   addUserToGroup() {
     if (this.newUsername.trim() !== '') {

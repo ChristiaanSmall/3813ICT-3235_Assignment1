@@ -31,7 +31,12 @@ export class AuthService {
     console.log("group id: " + groupId + " user id: " + userId);
     return this.http.post(`${this.apiUrl}/groups/requestAccess`, { groupId, userId });
   }
-  
+  deleteGroup(groupId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/groups/${groupId}`);
+  }
+  removeUserFromGroup(userId: string, groupId: string) {
+    return this.http.delete(`/api/groups/${groupId}/users/${userId}`);
+  }
   // Add this method
   getCurrentUser(): Observable<any> {
     return this.http.get(`${this.apiUrl}/currentUser`);
