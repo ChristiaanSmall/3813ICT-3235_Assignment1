@@ -14,8 +14,18 @@ export class AuthService {
   authenticate(username: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/authenticate`, { username, password });
   }
-
-
+  getUserById(userId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/users/${userId}`);
+  }
+  getGroupRequests(groupId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/groups/${groupId}/requests`);
+    
+  }
+  requestGroupAccess(userId: string, groupId: string): Observable<any> {
+    console.log("group id: " + groupId + " user id: " + userId);
+    return this.http.post(`${this.apiUrl}/groups/requestAccess`, { groupId, userId });
+  }
+  
   // Add this method
   getCurrentUser(): Observable<any> {
     return this.http.get(`${this.apiUrl}/currentUser`);

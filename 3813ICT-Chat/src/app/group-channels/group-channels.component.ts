@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { Subscription } from 'rxjs';
 
 interface UserGroup {
   admins: string[];
@@ -25,6 +26,10 @@ export class GroupChannelsComponent implements OnInit {
   newChannelName: string = '';
   addChannelMessage: string = '';
   groups: any[] = [];
+  groupRequests: any[] = [];
+  private subscriptions: Subscription[] = [];
+  userNames: { [userId: string]: string } = {};
+
   currentUser: any = null; // Declare a class property to store the current user
 
   constructor(private route: ActivatedRoute, private authService: AuthService) { }
@@ -37,19 +42,18 @@ export class GroupChannelsComponent implements OnInit {
       if (userData) {
         const user = JSON.parse(userData);
         this.role = user.role;
-        console.log("Role from session data:", this.role); // Log role from session data
       } else {
         console.log('User data is missing in sessionStorage.');
       }
     } else {
       console.log('User is not authenticated.');
     }
-
+  
     this.route.params.subscribe(params => {
       this.groupId = params['groupId'];
       this.authService.getGroups().subscribe(
         (groups: any[]) => {
-          this.groups = groups; // Store groups data
+          this.groups = groups;
           const group = this.groups.find(g => g.id === this.groupId);
           if (group) {
             this.channels = group.channels;
@@ -59,15 +63,39 @@ export class GroupChannelsComponent implements OnInit {
           console.error(`Error fetching groups: ${JSON.stringify(error)}`);
         }
       );
+  
       this.authService.getAllUsers().subscribe(
         allUsers => {
           this.allUsers = allUsers;
           this.updateUsersInGroup();
         }
       );
+  
+      this.subscriptions.push(
+        this.authService.getGroupRequests(this.groupId).subscribe(requests => {
+          this.groupRequests = requests;
+      
+          // Populate userNames with user names corresponding to their IDs
+          for (const requestId of requests) {
+            this.authService.getUserById(requestId).subscribe((user: any) => {
+              if (user && user.username) {
+                this.userNames[requestId] = user.username;
+              }
+            });
+          }
+        })
+      );
     });
   }
-
+  approveRequest(requestId: string) {
+    // Fetch user data by ID and replace the requestId with the user's name
+    this.authService.getUserById(requestId).subscribe((user: any) => {
+      if (user && user.username) {
+        this.newUsername = user.username;
+        this.addUserToGroup();
+      }
+    });
+  }
   addUserToGroup() {
     if (this.newUsername.trim() !== '') {
       const user = this.allUsers.find(u => u.username === this.newUsername);
@@ -183,7 +211,9 @@ export class GroupChannelsComponent implements OnInit {
       members: mappedMembers
     };
   }
-
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());  // Add this to unsubscribe
+  }
   addChannelToGroup() {
     if (this.newChannelName.trim() !== '') {
       this.authService.addChannelToGroup(this.newChannelName, this.groupId).subscribe(

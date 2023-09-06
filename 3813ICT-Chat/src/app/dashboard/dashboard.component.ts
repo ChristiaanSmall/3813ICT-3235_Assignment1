@@ -53,9 +53,14 @@ export class DashboardComponent implements OnInit {
     );
   }
   requestAccess(groupId: string): void {
-    console.log('Requesting access for group ID:', groupId);
-    // Logic to request access
+    console.log('Requesting access to group:', groupId);
+    console.log('Current User ID:', this.currentUserId);
+    this.authService.requestGroupAccess(this.currentUserId, groupId).subscribe(
+      () => console.log('Request successful'),
+      () => console.log('Request failed')
+    );
   }
+  
   isUserInGroup(group: any): boolean {
     console.log('Checking if user is in group:', group);
     console.log('Current User ID:', this.currentUserId);

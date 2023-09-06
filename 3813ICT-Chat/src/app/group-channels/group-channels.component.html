@@ -28,4 +28,14 @@
       <li *ngFor="let member of usersInGroup.members">{{ member }}</li>
     </ul>
   </div>
+
+  <div *ngIf="isUserAdminInGroup()">
+    <h4>Pending Group Access Requests</h4>
+    <ul>
+      <li *ngFor="let requestId of groupRequests">
+        {{ userNames[requestId] }}
+        <button (click)="approveRequest(requestId)">Approve</button>
+      </li>
+    </ul>
+  </div>
 </div>

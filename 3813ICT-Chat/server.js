@@ -20,8 +20,8 @@ let users = [
 ];
 
 let groups = [
-  { id: '1', name: 'Group1', channels: ['Channel1', 'Channel2'], admins: ['2'], members: ['3'] },
-  { id: '2', name: 'Group2', channels: ['Channel1'], admins: ['2', '3'], members: ['3'] }
+  { id: '1', name: 'Group1', channels: ['Channel1', 'Channel2'], admins: ['2'], members: [], requests: ["3"] },
+  { id: '2', name: 'Group2', channels: ['Channel1'], admins: ['2', '3'], members: ['3'], requests: [] }
 ];
 
 let currentUser = null;
@@ -55,6 +55,18 @@ app.get('/api/currentUser', (req, res) => {
 // Get Groups
 app.get('/api/groups', (req, res) => {
   res.json(groups);
+});
+
+// Endpoint to get user by ID
+app.get('/api/users/:id', (req, res) => {
+  const userId = req.params.id;
+  const user = users.find(u => u.id === userId);
+
+  if (user) {
+    res.json(user);
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
 });
 
 // Get Groups for User
@@ -168,9 +180,39 @@ app.post('/api/groups/:id/admins', (req, res) => {
   }
 });
 
+// API to handle access requests
+app.post('/api/groups/requestAccess', (req, res) => {
+  const { groupId, userId } = req.body;
+  const group = groups.find(g => g.id === groupId);
+  console.log(`Received request for group ID: ${groupId}`);
+
+  if (group) {
+    group.requests.push(userId);
+    console.log(`Added Request`);
+    res.json({ status: 'Request received' }); // This line sends a JSON response
+  } else {
+    console.log(`Group not found`);
+    res.status(404).json({ status: 'Group not found' });
+  }
+});
+
+// API to get the list of pending access requests for a specific group
+app.get('/api/groups/:groupId/requests', (req, res) => {
+  console.log(`Server received request for group ID: ${req.params.groupId}`);
+  const group = groups.find(g => g.id === req.params.groupId);
+
+  if (group) {
+    console.log(`Server found group, sending requests: ${JSON.stringify(group.requests)}`);
+    res.json(group.requests);
+  } else {
+    console.log(`Server could not find group with ID: ${req.params.groupId}`);
+    res.status(404).json({ message: 'Group not found' });
+  }
+});
+
 // Redirect all other routes to Angular app
 app.get('/*', function(req, res) {
-  res.sendFile(path.join(correctPath, 'index.html'));
+  res.sendFile(path.join(cPath, 'index.html'));
 });
 
 // Start the server
