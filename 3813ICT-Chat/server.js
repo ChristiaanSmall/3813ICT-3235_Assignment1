@@ -123,6 +123,47 @@ app.post('/api/groups/:id/users', (req, res) => {
     res.status(404).json({ message: 'Group not found' });
   }
 });
+// Promote User to Admin in Group
+app.post('/api/groups/:id/admins', (req, res) => {
+  console.log(`Received request to promote user to admin in group ID: ${req.params.id}`);
+  const { adminId } = req.body;
+  
+  // Find the group
+  const groupIndex = groups.findIndex(g => g.id === req.params.id);
+  
+  if (groupIndex !== -1) {
+    const group = groups[groupIndex];
+    
+    // Check if user is already an admin in the group
+    if (group.admins.includes(adminId)) {
+      return res.status(400).json({ message: 'User is already an admin' });
+    }
+    
+    // Check if user is a member in the group
+    if (!group.members.includes(adminId)) {
+      return res.status(400).json({ message: 'User is not in the group' });
+    }
+
+    // Find the user to be promoted and update their role to 'Group Admin'
+    const userIndex = users.findIndex(u => u.id === adminId);
+    if (userIndex !== -1) {
+      users[userIndex].role = 'Group Admin';
+    } else {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Promote user to admin
+    group.admins.push(adminId);
+    const index = group.members.indexOf(adminId);
+    if (index > -1) {
+      group.members.splice(index, 1);
+    }
+
+    return res.json({ message: 'User promoted to Group Admin', group });
+  } else {
+    return res.status(404).json({ message: 'Group not found' });
+  }
+});
 
 // Start the server
 app.listen(PORT, () => {

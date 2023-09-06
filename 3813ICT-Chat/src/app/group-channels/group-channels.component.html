@@ -4,27 +4,15 @@
     <li *ngFor="let channel of channels">{{ channel }}</li>
   </ul>
   
-  <!-- Super Admin Controls -->
-  <div *ngIf="role === 'Super Admin'">
-    <h2>Super Admin Controls</h2>
+  <div *ngIf="isUserAdminInGroup">
+    <!-- Super Admin Controls -->
+    <h2>Admin Controls</h2>
     <input type="text" placeholder="Username" [(ngModel)]="newUsername">
     <button (click)="addUserToGroup()">Add User</button>
     <input type="text" placeholder="Username" [(ngModel)]="promoteUsername">
     <button (click)="promoteToGroupAdmin()">Promote to Group Admin</button>
     <p>{{ addUserMessage }}</p>
     <p>{{ promoteUserMessage }}</p>
-  </div>
-
-  <!-- Buttons only visible for Group Admins -->
-  <div *ngIf="role === 'Group Admin'">
-    <!-- Create Channel -->
-    <input type="text" placeholder="Channel Name" [(ngModel)]="newChannelName">
-    <button (click)="addChannelToGroup()">Create Channel</button>
-    <p>{{ addChannelMessage }}</p>
-  
-    <!-- Add User to Group -->
-    <input type="text" placeholder="Username" [(ngModel)]="newUsername">
-    <button (click)="addUserToGroup()">Add User</button>
   </div>
 
   <!-- List of Users in the Group -->

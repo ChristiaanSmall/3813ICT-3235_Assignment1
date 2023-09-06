@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 interface UserGroup {
   admins: string[];
@@ -25,6 +27,7 @@ export class GroupChannelsComponent implements OnInit {
   allUsers: any[] = [];
   newChannelName: string = '';
   addChannelMessage: string = '';
+  groups: any[] = []; // Define groups property
 
   constructor(private route: ActivatedRoute, private authService: AuthService) { }
 
@@ -43,15 +46,19 @@ export class GroupChannelsComponent implements OnInit {
     } else {
       console.log('User is not authenticated.');
     }
-  
+
     this.route.params.subscribe(params => {
       this.groupId = params['groupId'];
       this.authService.getGroups().subscribe(
-        groups => {
-          const group = groups.find(g => g.id === this.groupId);
+        (groups: any[]) => {
+          this.groups = groups; // Store groups data
+          const group = this.groups.find(g => g.id === this.groupId);
           if (group) {
             this.channels = group.channels;
           }
+        },
+        error => {
+          console.error(`Error fetching groups: ${JSON.stringify(error)}`);
         }
       );
       this.authService.getAllUsers().subscribe(
@@ -63,7 +70,6 @@ export class GroupChannelsComponent implements OnInit {
     }); // Closing for ngOnInit
   }
 
-
   addUserToGroup() {
     if (this.newUsername.trim() !== '') {
       const user = this.allUsers.find(u => u.username === this.newUsername);
@@ -73,7 +79,7 @@ export class GroupChannelsComponent implements OnInit {
           this.addUserMessage = `User ${this.newUsername} is already in the group.`;
           return;
         }
-        
+
         this.authService.addUserToGroup(user.id, this.groupId).subscribe(
           response => {
             this.addUserMessage = `User ${this.newUsername} added successfully.`;
@@ -96,17 +102,21 @@ export class GroupChannelsComponent implements OnInit {
           this.promoteUserMessage = `User ${this.promoteUsername} is already an admin.`;
           return;
         }
-        
+
         // Check if user is in the group
         if (!this.usersInGroup.members.includes(user.username) && !this.usersInGroup.admins.includes(user.username)) {
           this.promoteUserMessage = `User ${this.promoteUsername} is not in the group.`;
           return;
         }
-  
+
         this.authService.addAdminToGroup(user.id, this.groupId).subscribe(
           response => {
             this.promoteUserMessage = `User ${this.promoteUsername} promoted to Group Admin.`;
             this.updateUsersInGroup();
+
+            // Update session data with the new role
+            const updatedUser = { ...user, role: 'Group Admin' };
+            sessionStorage.setItem('user', JSON.stringify(updatedUser));
           },
           error => {
             this.promoteUserMessage = 'An error occurred while promoting the user.';
@@ -117,6 +127,33 @@ export class GroupChannelsComponent implements OnInit {
       }
     }
   }
+// Declare a class property to store the current user
+currentUser: any = null;
+
+isUserAdminInGroup(): boolean {
+    // Check if the current user is already available
+    if (this.currentUser) {
+        const currentUserId = this.currentUser.id;
+        const group = this.groups.find((g) => g.id === this.groupId);
+        const isSuperAdmin = this.role === 'Super Admin';
+
+        // Check if the current user is a Super Admin or an Admin in the group
+        return isSuperAdmin || (group?.admins.includes(currentUserId) || false);
+    }
+
+    // Subscribe to getCurrentUser only if the current user is not available
+    this.authService.getCurrentUser().subscribe((user) => {
+        if (user) {
+            this.currentUser = user;
+            const currentUserId = user.id;
+
+            // Add a console log here
+            console.log(`Current User ID: ${currentUserId}`);
+        }
+    });
+
+    return false;
+}
 
   updateUsersInGroup() {
     console.log(`Updating users for group ID: ${this.groupId}`);
@@ -134,18 +171,17 @@ export class GroupChannelsComponent implements OnInit {
     );
   }
 
-  
   mapUsersToNames(users: {admins: string[], members: string[]}): any {
     const mappedAdmins = users.admins.map(id => {
       const user = this.allUsers.find(u => u.id === id);
       return user ? user.username : 'Unknown';
     });
-    
+
     const mappedMembers = users.members.map(id => {
       const user = this.allUsers.find(u => u.id === id);
       return user ? user.username : 'Unknown';
     });
-    
+
     return {
       admins: mappedAdmins,
       members: mappedMembers
@@ -157,7 +193,7 @@ export class GroupChannelsComponent implements OnInit {
       this.authService.addChannelToGroup(this.newChannelName, this.groupId).subscribe(
         response => {
           this.addChannelMessage = `Channel ${this.newChannelName} created successfully.`;
-          this.channels.push(this.newChannelName); // Add the new channel to local channels array
+          this.channels.push(this.newChannelName); // Add the new channel to the local channels array
           this.newChannelName = ''; // Clear the input field
         },
         error => {
