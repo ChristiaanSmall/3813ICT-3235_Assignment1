@@ -12,13 +12,24 @@ export class LoginComponent {
   password = '';
 
   constructor(private authService: AuthService, private router: Router) {}
-
+  
   onLogin(): void {
-    const user = this.authService.authenticate(this.username, this.password);
-    if (user) {
-      this.router.navigate(['/dashboard']);
-    } else {
-      alert('Invalid credentials');
-    }
+    this.authService.authenticate(this.username, this.password).subscribe(
+      user => {
+        if (user) {
+          // Store authentication status in sessionStorage
+          sessionStorage.setItem('authenticated', 'true');
+
+          // Store user data in sessionStorage
+          sessionStorage.setItem('user', JSON.stringify(user));
+
+          // Navigate to the dashboard
+          this.router.navigate(['/dashboard']);
+        }
+      },
+      error => {
+        alert('Invalid credentials');
+      }
+    );
   }
 }

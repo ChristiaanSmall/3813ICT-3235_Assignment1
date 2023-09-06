@@ -16,10 +16,16 @@
     </div>
   
     <!-- List of Users in the Group -->
-    <div *ngIf="usersInGroup.length">
-      <h2>Users in the Group</h2>
+    <div *ngIf="usersInGroup.length > 0">
+      <h2>Admins</h2>
       <ul>
-        <li *ngFor="let user of usersInGroup">{{ user.username }}</li>
+        <li *ngFor="let admin of usersInGroup.admins">{{ admin }}</li>
+      </ul>
+      
+      <!-- Members -->
+      <h2>Members</h2>
+      <ul>
+        <li *ngFor="let member of usersInGroup.members">{{ member }}</li>
       </ul>
     </div>
   </div>

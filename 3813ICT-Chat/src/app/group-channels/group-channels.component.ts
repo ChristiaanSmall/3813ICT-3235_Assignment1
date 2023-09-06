@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../auth.service';
-
+interface UserGroup {
+  admins: string[];
+  members: string[];
+}
 @Component({
   selector: 'app-group-channels',
   templateUrl: './group-channels.component.html',
@@ -15,51 +18,92 @@ export class GroupChannelsComponent implements OnInit {
   promoteUsername: string = '';
   addUserMessage: string = ''; // Feedback messages
   promoteUserMessage: string = '';
-  usersInGroup: any[] = []; // List of users in the group
+  usersInGroup: UserGroup = { admins: [], members: [] }; // Initialize as an object, not array
+  allUsers: any[] = [];
 
   constructor(private route: ActivatedRoute, private authService: AuthService) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      console.log('Params:', params); // Check the value of params['groupId']
       this.groupId = params['groupId'];
-      console.log('GroupId:', this.groupId); // Verify the value of this.groupId
-      this.channels = this.authService.getChannels(this.groupId);
-      this.role = this.authService.getCurrentUser().role;
-      this.updateUsersInGroup();
-    });
+      this.authService.getGroups().subscribe(
+        groups => {
+          const group = groups.find(g => g.id === this.groupId);
+          if (group) {
+            this.channels = group.channels;
+            this.role = group.role;
+          }
+        }
+      );
+      this.authService.getAllUsers().subscribe(
+        allUsers => {
+          this.allUsers = allUsers;
+          this.updateUsersInGroup();
+        }
+      );
+    }); // Closing for ngOnInit
   }
 
+    
   addUserToGroup() {
     if (this.newUsername.trim() !== '') {
-      const user = this.authService.getUserByUsername(this.newUsername);
-      if (user) {
-        this.authService.addUserToGroup(user.id, this.groupId);
-        this.newUsername = '';
-        this.addUserMessage = `User ${user.username} added successfully.`;
-        this.updateUsersInGroup();
-      } else {
-        this.addUserMessage = 'User not found.';
-      }
+      this.authService.addUserToGroup(this.newUsername, this.groupId).subscribe(
+        response => {
+          this.addUserMessage = `User ${this.newUsername} added successfully.`;
+          this.updateUsersInGroup();
+        },
+        error => {
+          this.addUserMessage = 'User not found or already in the group.';
+        }
+      );
     }
   }
 
   promoteToGroupAdmin() {
     if (this.promoteUsername.trim() !== '') {
-      const user = this.authService.getUserByUsername(this.promoteUsername);
-      if (user) {
-        this.authService.addAdminToGroup(user.id, this.groupId);
-        this.promoteUsername = '';
-        this.promoteUserMessage = `User ${user.username} promoted to Group Admin.`;
-        this.updateUsersInGroup();
-      } else {
-        this.promoteUserMessage = 'User not found.';
-      }
+      this.authService.addAdminToGroup(this.promoteUsername, this.groupId).subscribe(
+        response => {
+          this.promoteUserMessage = `User ${this.promoteUsername} promoted to Group Admin.`;
+          this.updateUsersInGroup();
+        },
+        error => {
+          this.promoteUserMessage = 'User not found or already an admin.';
+        }
+      );
     }
   }
 
   updateUsersInGroup() {
-    this.usersInGroup = this.authService.getUsersInGroup(this.groupId);
-    console.log("Users in group:", this.usersInGroup);
+    console.log(`Updating users for group ID: ${this.groupId}`);
+    this.authService.getUsersInGroup(this.groupId).subscribe(
+      (users: any) => {
+        if ('admins' in users && 'members' in users) {
+          this.usersInGroup = this.mapUsersToNames(users);
+        } else {
+          console.error('Received unexpected data format:', users);
+        }
+      },
+      error => {
+        console.error(`Error fetching users: ${JSON.stringify(error)}`);
+      }
+    );
+  }
+
+  
+  mapUsersToNames(users: {admins: string[], members: string[]}): any {
+    const mappedAdmins = users.admins.map(id => {
+      const user = this.allUsers.find(u => u.id === id);
+      return user ? user.name : 'Unknown';
+    });
+    
+    const mappedMembers = users.members.map(id => {
+      const user = this.allUsers.find(u => u.id === id);
+      return user ? user.name : 'Unknown';
+    });
+    
+    return {
+      admins: mappedAdmins,
+      members: mappedMembers
+    };
   }
 }
