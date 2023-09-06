@@ -1,12 +1,17 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');  // Add this line
 const app = express();
 const PORT = 3000;
+const cPath = 'C:/Users/Bojack/Documents/GitHub/3813ICT-3235_Assignment1/3813ICT-Chat/dist/3813-ict-chat';
 
-app.use(cors());
+//app.use(cors());
 app.use(bodyParser.json());
 
+// Serve static files from Angular build folder
+
+app.use(express.static(cPath));
 // Initial data
 let users = [
   { id: '1', username: 'super', password: '123', role: 'Super Admin', groups: [] },
@@ -132,37 +137,34 @@ app.post('/api/groups/:id/admins', (req, res) => {
   const groupIndex = groups.findIndex(g => g.id === req.params.id);
   
   if (groupIndex !== -1) {
-    const group = groups[groupIndex];
-    
     // Check if user is already an admin in the group
-    if (group.admins.includes(adminId)) {
-      return res.status(400).json({ message: 'User is already an admin' });
+    if (groups[groupIndex].admins.includes(adminId)) {
+      res.status(400).json({ message: 'User is already an admin' });
+      return;
     }
     
     // Check if user is a member in the group
-    if (!group.members.includes(adminId)) {
-      return res.status(400).json({ message: 'User is not in the group' });
-    }
-
-    // Find the user to be promoted and update their role to 'Group Admin'
-    const userIndex = users.findIndex(u => u.id === adminId);
-    if (userIndex !== -1) {
-      users[userIndex].role = 'Group Admin';
-    } else {
-      return res.status(404).json({ message: 'User not found' });
+    if (!groups[groupIndex].members.includes(adminId) && !groups[groupIndex].admins.includes(adminId)) {
+      res.status(400).json({ message: 'User is not in the group' });
+      return;
     }
 
     // Promote user to admin
-    group.admins.push(adminId);
-    const index = group.members.indexOf(adminId);
+    groups[groupIndex].admins.push(adminId);
+    const index = groups[groupIndex].members.indexOf(adminId);
     if (index > -1) {
-      group.members.splice(index, 1);
+      groups[groupIndex].members.splice(index, 1);
     }
 
-    return res.json({ message: 'User promoted to Group Admin', group });
+    res.json({ message: 'User promoted to admin', group: groups[groupIndex] });
   } else {
-    return res.status(404).json({ message: 'Group not found' });
+    res.status(404).json({ message: 'Group not found' });
   }
+});
+
+// Redirect all other routes to Angular app
+app.get('/*', function(req, res) {
+  res.sendFile(path.join(correctPath, 'index.html'));
 });
 
 // Start the server
