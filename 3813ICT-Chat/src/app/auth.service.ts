@@ -21,6 +21,12 @@ export class AuthService {
     return this.http.get<any[]>(`${this.apiUrl}/groups/${groupId}/requests`);
     
   }
+  removeRequest(groupId: string, userId: string): Observable<any> {
+    const url = `${this.apiUrl}/groups/removeRequest`;
+    const body = { groupId, userId };
+
+    return this.http.post(url, body);
+  }
   requestGroupAccess(userId: string, groupId: string): Observable<any> {
     console.log("group id: " + groupId + " user id: " + userId);
     return this.http.post(`${this.apiUrl}/groups/requestAccess`, { groupId, userId });

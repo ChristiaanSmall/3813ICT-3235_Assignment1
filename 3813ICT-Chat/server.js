@@ -209,7 +209,23 @@ app.get('/api/groups/:groupId/requests', (req, res) => {
     res.status(404).json({ message: 'Group not found' });
   }
 });
+app.post('/api/groups/removeRequest', (req, res) => {
+  const { groupId, userId } = req.body;
+  const group = groups.find(g => g.id === groupId);
 
+  if (group) {
+    const requestIndex = group.requests.indexOf(userId);
+
+    if (requestIndex !== -1) {
+      group.requests.splice(requestIndex, 1);
+      res.json({ status: 'Request removed' });
+    } else {
+      res.status(404).json({ status: 'Request not found' });
+    }
+  } else {
+    res.status(404).json({ status: 'Group not found' });
+  }
+});
 // Redirect all other routes to Angular app
 app.get('/*', function(req, res) {
   res.sendFile(path.join(cPath, 'index.html'));

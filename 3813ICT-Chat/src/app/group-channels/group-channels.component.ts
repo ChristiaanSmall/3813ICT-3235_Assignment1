@@ -73,16 +73,35 @@ export class GroupChannelsComponent implements OnInit {
   
       this.subscriptions.push(
         this.authService.getGroupRequests(this.groupId).subscribe(requests => {
-          this.groupRequests = requests;
-      
-          // Populate userNames with user names corresponding to their IDs
-          for (const requestId of requests) {
-            this.authService.getUserById(requestId).subscribe((user: any) => {
-              if (user && user.username) {
-                this.userNames[requestId] = user.username;
+          this.authService.getUsersInGroup(this.groupId).subscribe(
+            (users: any) => {
+              if ('admins' in users && 'members' in users) {
+                // Filter out requests from users who are already members or admins
+                this.groupRequests = requests.filter(requestId => {
+                  const user = this.allUsers.find(u => u.id === requestId);
+                  const username = user ? user.username : '';
+                  return !(
+                    this.usersInGroup.members.includes(username) ||
+                    this.usersInGroup.admins.includes(username)
+                  );
+                });
+    
+                // Populate userNames with user names corresponding to their IDs
+                for (const requestId of this.groupRequests) {
+                  this.authService.getUserById(requestId).subscribe((user: any) => {
+                    if (user && user.username) {
+                      this.userNames[requestId] = user.username;
+                    }
+                  });
+                }
+              } else {
+                console.error('Received unexpected data format:', users);
               }
-            });
-          }
+            },
+            error => {
+              console.error(`Error fetching users: ${JSON.stringify(error)}`);
+            }
+          );
         })
       );
     });
@@ -92,7 +111,19 @@ export class GroupChannelsComponent implements OnInit {
     this.authService.getUserById(requestId).subscribe((user: any) => {
       if (user && user.username) {
         this.newUsername = user.username;
-        this.addUserToGroup();
+  
+        // Check if the user is already a member or admin in the group
+        if (
+          this.usersInGroup.members.includes(this.newUsername) ||
+          this.usersInGroup.admins.includes(this.newUsername)
+        ) {
+          // If the user is already a member or admin, remove the request
+          this.groupRequests = this.groupRequests.filter(req => req !== requestId);
+        } else {
+          // If not, proceed to approve the request and remove it
+          this.groupRequests = this.groupRequests.filter(req => req !== requestId);
+          this.addUserToGroup();
+        }
       }
     });
   }
