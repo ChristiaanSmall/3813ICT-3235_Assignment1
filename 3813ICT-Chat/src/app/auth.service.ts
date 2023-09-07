@@ -76,7 +76,9 @@ export class AuthService {
   addChannelToGroup(channelName: string, groupId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/groups/${groupId}/channels`, { channelName });
   }
-
+  createChannel(groupId: string, channelName: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/groups/${groupId}/channels`, { name: channelName });
+  }
   getUsersInGroup(groupId: string): Observable<any[]> {
     const url = `${this.apiUrl}/groups/${groupId}/users`;
     console.log(`Fetching users from: ${url}`);  // Log the URL

@@ -1,7 +1,9 @@
-<div class="container">
-    <h1>Chat Window</h1>
-    <div class="chat-box">
-      <p>Chat content will go here.</p>
+<div class="chat-container">
+  <div class="message-display">
+    <div *ngFor="let message of messages">
+      {{ message }}
     </div>
   </div>
-  
+  <textarea #chatInput (keydown.enter)="sendMessage(chatInput.value); chatInput.value='';"></textarea>
+  <button (click)="sendMessage(chatInput.value); chatInput.value='';">Send</button>
+</div>

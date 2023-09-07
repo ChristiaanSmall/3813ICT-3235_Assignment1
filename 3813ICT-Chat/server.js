@@ -20,8 +20,8 @@ let users = [
 ];
 
 let groups = [
-  { id: '1', name: 'Group1', channels: ['Channel1', 'Channel2'], admins: ['2'], members: [], requests: ["3"] },
-  { id: '2', name: 'Group2', channels: ['Channel1'], admins: ['2', '3'], members: ['3'], requests: [] }
+  { id: '1', name: 'Group1', channels: [{ name: 'Channel1', messages: [] }, { name: 'Channel2', messages: [] }], admins: ['2'], members: [], requests: ["3"] },
+  { id: '2', name: 'Group2', channels: [{ name: 'Channel1', messages: [] }], admins: ['2', '3'], members: ['3'], requests: [] }
 ];
 
 let currentUser = null;
@@ -66,6 +66,54 @@ app.get('/api/users/:id', (req, res) => {
     res.json(user);
   } else {
     res.status(404).json({ message: 'User not found' });
+  }
+});
+
+// Get Messages from a Channel in a Group
+app.get('/api/groups/:groupId/channels/:channelId/messages', (req, res) => {
+  const { groupId, channelId } = req.params;
+  const group = groups.find(g => g.id === groupId);
+  if (group) {
+    const channel = group.channels.find(c => c.name === channelId);
+    if (channel) {
+      res.json(channel.messages);
+    } else {
+      res.status(404).json({ message: 'Channel not found' });
+    }
+  } else {
+    res.status(404).json({ message: 'Group not found' });
+  }
+});
+
+// Send Message to a Channel in a Group
+app.post('/api/groups/:groupId/channels/:channelId/messages', (req, res) => {
+  const { groupId, channelId } = req.params;
+  const { message } = req.body;
+  const group = groups.find(g => g.id === groupId);
+  if (group) {
+    const channel = group.channels.find(c => c.name === channelId);
+    if (channel) {
+      channel.messages.push(message);
+      res.json({ message: 'Message sent' });
+    } else {
+      res.status(404).json({ message: 'Channel not found' });
+    }
+  } else {
+    res.status(404).json({ message: 'Group not found' });
+  }
+});
+// Add this to your server.js
+app.post('/api/groups/:groupId/channels', (req, res) => {
+  const { groupId } = req.params;
+  const { name } = req.body;
+  
+  const group = groups.find(g => g.id === groupId);
+  
+  if(group) {
+    group.channels.push({ name, messages: [] });
+    res.json({ message: 'Channel created' });
+  } else {
+    res.status(404).json({ message: 'Group not found' });
   }
 });
 

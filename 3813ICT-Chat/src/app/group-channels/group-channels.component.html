@@ -1,7 +1,7 @@
 <div class="container">
   <h1>Channels in Selected Group</h1>
   <ul>
-    <li *ngFor="let channel of channels">{{ channel }}</li>
+    <li *ngFor="let channel of channels">{{ channel.name }}</li>
   </ul>
   
   <div *ngIf="isUserAdminInGroup()">
@@ -45,4 +45,18 @@
       </li>
     </ul>
   </div>
+  <!-- Add this to your group-channels.component.html -->
+  <div *ngIf="isUserAdminInGroup()">
+    <form (submit)="createChannel()">
+      <input type="text" [(ngModel)]="newChannelName" placeholder="Enter new channel name">
+      <button type="submit">Create Channel</button>
+    </form>
+  </div>
+  <div *ngFor="let channel of channels">
+    <h3>{{ channel.name }}</h3>
+    <button (click)="goToChannel(groupId, channel.name)">Go to Channel</button>
+    <button *ngIf="isUserAdminInGroup()" (click)="deleteChannelFromGroup(channel.name)">Delete</button>
+  </div>
+
+  
 </div>

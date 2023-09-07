@@ -16,7 +16,7 @@ interface UserGroup {
 })
 export class GroupChannelsComponent implements OnInit {
   groupId!: string;
-  channels: string[] = [];
+  channels: { name: string, messages: any[] }[] = [];
   role!: string;
   newUsername: string = '';
   promoteUsername: string = '';
@@ -107,7 +107,20 @@ export class GroupChannelsComponent implements OnInit {
       );
     });
   }
-  
+  goToChannel(groupId: string, channelId: string): void {
+    console.log(`Navigating to group ${groupId} and channel ${channelId}`);
+    this.router.navigate(['/group', groupId, 'channel', channelId]);
+  }
+  deleteChannelFromGroup(channelName: string) {
+    this.authService.deleteChannelFromGroup(channelName, this.groupId).subscribe(
+      response => {
+        this.channels = this.channels.filter(channel => channel.name !== channelName);
+      },
+      error => {
+        console.error(`Failed to delete the channel: ${JSON.stringify(error)}`);
+      }
+    );
+  }
   approveRequest(requestId: string) {
     // Fetch user data by ID and replace the requestId with the user's name
     this.authService.getUserById(requestId).subscribe((user: any) => {
@@ -260,7 +273,12 @@ export class GroupChannelsComponent implements OnInit {
       }
     );
   }
-
+  createChannel(): void {
+    this.authService.createChannel(this.groupId, this.newChannelName).subscribe(response => {
+      this.channels.push({ name: this.newChannelName, messages: [] });
+      this.newChannelName = ''; // Clear the input
+    });
+  }
   mapUsersToNames(users: {admins: string[], members: string[]}): any {
     const mappedAdmins = users.admins.map(id => {
       const user = this.allUsers.find(u => u.id === id);
@@ -285,7 +303,7 @@ export class GroupChannelsComponent implements OnInit {
       this.authService.addChannelToGroup(this.newChannelName, this.groupId).subscribe(
         response => {
           this.addChannelMessage = `Channel ${this.newChannelName} created successfully.`;
-          this.channels.push(this.newChannelName);
+          this.channels.push({ name: this.newChannelName, messages: [] });
           this.newChannelName = '';
         },
         error => {

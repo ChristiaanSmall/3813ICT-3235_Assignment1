@@ -8,7 +8,7 @@ import { GroupChannelsComponent } from './group-channels/group-channels.componen
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'dashboard', component: DashboardComponent },
-  { path: 'chat-window', component: ChatWindowComponent },
+  { path: 'group/:groupId/channel/:channelId', component: ChatWindowComponent },
   { path: 'group-channels/:groupId', component: GroupChannelsComponent },
   { path: '**', redirectTo: 'login' },
 ];
