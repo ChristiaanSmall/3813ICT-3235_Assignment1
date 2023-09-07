@@ -1,0 +1,53 @@
+/* CSS for registration and login forms */
+.container {
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 400px; /* Adjust the maximum width as needed */
+    margin: 0 auto; /* Center the container horizontally */
+    margin-top: 20px; /* Add some top margin for separation */
+  }
+  
+  h1 {
+    color: #333;
+    font-size: 2rem;
+    margin: 0 0 20px; /* Adjust margin for spacing */
+  }
+  
+  label {
+    display: block;
+    font-weight: bold;
+    margin-top: 1rem;
+    color: #333; /* Darken label text */
+  }
+  
+  input[type="text"],
+  input[type="password"],
+  input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0; /* Adjust margin for spacing */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Ensure padding and border don't affect width */
+  }
+  
+  button[type="submit"] {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 1rem;
+  }
+  
+  /* Style for the active link */
+  nav ul li a.router-link-active {
+    color: #333;
+    text-decoration: underline;
+  }
+  

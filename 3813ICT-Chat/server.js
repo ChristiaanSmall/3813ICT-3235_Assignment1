@@ -5,7 +5,6 @@ const path = require('path');  // Add this line
 const app = express();
 const PORT = 3000;
 const cPath = 'C:/Users/Bojack/Documents/GitHub/3813ICT-3235_Assignment1/3813ICT-Chat/dist/3813-ict-chat';
-let lastUserId = 0;
 //app.use(cors());
 app.use(bodyParser.json());
 
@@ -13,12 +12,16 @@ app.use(bodyParser.json());
 
 app.use(express.static(cPath));
 // Initial data
+let lastUserId = 0;
+
 let users = [
   { id: '1', username: 'super', password: '123', email: 'super@example.com', role: 'Super Admin', groups: [] },
   { id: '2', username: 'groupadmin', password: '123', email: 'admin@example.com', role: 'Group Admin', groups: [] },
   { id: '3', username: 'user', password: '123', email: 'user@example.com', role: 'User', groups: [] }
 ];
-
+if (users.length > 0) {
+  lastUserId = Math.max(...users.map(u => Number(u.id)));
+}
 let groups = [
   { id: '1', name: 'Group1', channels: [{ name: 'Channel1', messages: [] }, { name: 'Channel2', messages: [] }], admins: ['2'], members: [], requests: ["3"] },
   { id: '2', name: 'Group2', channels: [{ name: 'Channel1', messages: [] }], admins: ['2', '3'], members: ['3'], requests: [] }
@@ -121,19 +124,20 @@ app.post('/api/register', (req, res) => {
     res.status(400).json({ message: 'Username or email already exists' });
     return;
   }
-    lastUserId++; // Increment the counter
-    const newUser = {
-      id: lastUserId.toString(),
-      username: req.body.username,
-      password: req.body.password,
-      email: req.body.email,
-      role: 'User', // default role
-      groups: [] // default groups
-    };
-  
-    users.push(newUser);
-    res.json({ message: 'User registered', user: newUser });
-  });
+
+  lastUserId++; // Increment the counter
+  const newUser = {
+    id: lastUserId.toString(),
+    username,
+    password,
+    email,
+    role: 'User', // default role
+    groups: [] // default groups
+  };
+
+  users.push(newUser);
+  res.json({ message: 'User registered', user: newUser });
+});
 
 // Add this to your server.js
 app.post('/api/groups/:groupId/channels', (req, res) => {
