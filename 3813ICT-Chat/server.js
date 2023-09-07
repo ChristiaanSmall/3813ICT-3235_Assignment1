@@ -26,16 +26,15 @@ let groups = [
   { id: '1', name: 'Group1', channels: [{ name: 'Channel1', messages: [] }, { name: 'Channel2', messages: [] }], admins: ['2'], members: [], requests: ["3"] },
   { id: '2', name: 'Group2', channels: [{ name: 'Channel1', messages: [] }], admins: ['2', '3'], members: ['3'], requests: [] }
 ];
-
 let currentUser = null;
-console.log('runningg');  // Logging the received data
 
-// Authenticate
+// User Routes
+// Authenticates user credentials and returns an authentication token.
 app.post('/api/authenticate', (req, res) => {
   console.log('Received:', req.body);  // Logging the received data
   const { username, password } = req.body;
   const user = users.find(u => u.username === username && u.password === password);
-  
+
   if (user) {
     console.log('User found:', user);  // Logging the found user
     currentUser = user;
@@ -46,7 +45,7 @@ app.post('/api/authenticate', (req, res) => {
   }
 });
 
-// Get current user
+// Returns the current authenticated user's information.
 app.get('/api/currentUser', (req, res) => {
   if (currentUser) {
     res.json(currentUser);
@@ -55,67 +54,7 @@ app.get('/api/currentUser', (req, res) => {
   }
 });
 
-// Get Groups
-app.get('/api/groups', (req, res) => {
-  res.json(groups);
-});
-
-// Endpoint to get user by ID
-app.get('/api/users/:id', (req, res) => {
-  const userId = req.params.id;
-  const user = users.find(u => u.id === userId);
-
-  if (user) {
-    res.json(user);
-  } else {
-    res.status(404).json({ message: 'User not found' });
-  }
-});
-app.post('/api/promoteToSuperAdmin', (req, res) => {
-  const { username } = req.body;
-  const user = users.find(u => u.username === username);
-  
-  if (user) {
-    user.role = 'Super Admin';
-    res.json({ message: 'User promoted to Super Admin' });
-  } else {
-    res.status(404).json({ message: 'User not found' });
-  }
-});
-// Get Messages from a Channel in a Group
-app.get('/api/groups/:groupId/channels/:channelId/messages', (req, res) => {
-  const { groupId, channelId } = req.params;
-  const group = groups.find(g => g.id === groupId);
-  if (group) {
-    const channel = group.channels.find(c => c.name === channelId);
-    if (channel) {
-      res.json(channel.messages);
-    } else {
-      res.status(404).json({ message: 'Channel not found' });
-    }
-  } else {
-    res.status(404).json({ message: 'Group not found' });
-  }
-});
-
-// Send Message to a Channel in a Group
-app.post('/api/groups/:groupId/channels/:channelId/messages', (req, res) => {
-  const { groupId, channelId } = req.params;
-  const { message } = req.body;
-  const group = groups.find(g => g.id === groupId);
-  if (group) {
-    const channel = group.channels.find(c => c.name === channelId);
-    if (channel) {
-      channel.messages.push(message);
-      res.json({ message: 'Message sent' });
-    } else {
-      res.status(404).json({ message: 'Channel not found' });
-    }
-  } else {
-    res.status(404).json({ message: 'Group not found' });
-  }
-});
-// Add this to your server.js
+// Registers a new user and returns the new user's information.
 app.post('/api/register', (req, res) => {
   const { username, password, email } = req.body;
   const userExists = users.some(u => u.username === username || u.email === email);
@@ -139,56 +78,69 @@ app.post('/api/register', (req, res) => {
   res.json({ message: 'User registered', user: newUser });
 });
 
-// Add this to your server.js
-app.post('/api/groups/:groupId/channels', (req, res) => {
-  const { groupId } = req.params;
-  const { name } = req.body;
-  
-  const group = groups.find(g => g.id === groupId);
-  
-  if(group) {
-    group.channels.push({ name, messages: [] });
-    res.json({ message: 'Channel created' });
+// Promotes an existing user to Super Admin role.
+app.post('/api/promoteToSuperAdmin', (req, res) => {
+  const { username } = req.body;
+  const user = users.find(u => u.username === username);
+
+  if (user) {
+    user.role = 'Super Admin';
+    res.json({ message: 'User promoted to Super Admin' });
   } else {
-    res.status(404).json({ message: 'Group not found' });
+    res.status(404).json({ message: 'User not found' });
   }
 });
 
-// Get Groups for User
-app.get('/api/groupsForUser', (req, res) => {
-  const { userId, role } = req.query;
-  if (role === 'Super Admin') {
-    res.json(groups);
-  } else {
-    const userGroups = groups.filter(group => group.admins.includes(userId) || group.members.includes(userId));
-    res.json(userGroups);
-  }
-});
-
-// Get Users in a Group
-app.get('/api/groups/:id/users', (req, res) => {
-  console.log(`Received request for group ID: ${req.params.id}`);
-  console.log(`Current groups: ${JSON.stringify(groups)}`);
-  
-  const group = groups.find(g => parseInt(g.id, 10) === parseInt(req.params.id, 10));
-  
-  if (group) {
-    console.log(`Group found: ${JSON.stringify(group)}`);
-    const allUsersInGroup = {
-      admins: group.admins,
-      members: group.members
-    };
-    res.json(allUsersInGroup);
-  } else {
-    console.log(`No group found for ID ${req.params.id}`);
-    res.status(404).json({ message: 'Group not found' });
-  }
-});
-// Get all users
+// Retrieves a list of all users.
 app.get('/api/users', (req, res) => {
   res.json(users);
 });
-// Create Group
+
+// Retrieves user information based on user ID.
+app.get('/api/users/:id', (req, res) => {
+  const userId = req.params.id;
+  const user = users.find(u => u.id === userId);
+
+  if (user) {
+    res.json(user);
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+});
+
+// Deletes a user based on username.
+app.delete('/api/users/:username', (req, res) => {
+  const username = req.params.username;
+  const userIndex = users.findIndex(u => u.username === username);
+
+  if (userIndex !== -1) {
+    users.splice(userIndex, 1);
+    res.json({ message: 'User account deleted successfully' });
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+});
+
+// Group Routes
+// Retrieves a list of all groups.
+app.get('/api/groups', (req, res) => {
+  res.json(groups);
+});
+
+// API to delete a group
+app.delete('/api/groups/:groupId', (req, res) => {
+  const groupId = req.params.groupId;
+  const groupIndex = groups.findIndex(g => g.id === groupId);
+
+  if (groupIndex !== -1) {
+    groups.splice(groupIndex, 1);
+    res.json({ message: 'Group deleted successfully' });
+  } else {
+    res.status(404).json({ message: 'Group not found' });
+  }
+});
+
+// Creates a new group and returns the new group's information.
 app.post('/api/createGroup', (req, res) => {
   const { groupName, adminId } = req.body;
   const newGroupId = (groups.length + 1).toString();
@@ -202,51 +154,95 @@ app.post('/api/createGroup', (req, res) => {
   groups.push(newGroup);
   res.json({ message: 'Group created', group: newGroup });
 });
-// delete a user
-app.delete('/api/users/:username', (req, res) => {
-  const username = req.params.username;
-  const userIndex = users.findIndex(u => u.username === username);
-  
-  if (userIndex !== -1) {
-    users.splice(userIndex, 1);
-    res.json({ message: 'User account deleted successfully' });
+
+// Retrieves a list of groups for the authenticated user.
+app.get('/api/groupsForUser', (req, res) => {
+  const { userId, role } = req.query;
+  if (role === 'Super Admin') {
+    res.json(groups);
   } else {
-    res.status(404).json({ message: 'User not found' });
+    const userGroups = groups.filter(group => group.admins.includes(userId) || group.members.includes(userId));
+    res.json(userGroups);
   }
 });
-// Delete a channel from a group
-app.delete('/api/groups/:groupId/channels/:channelName', (req, res) => {
-  const { groupId, channelName } = req.params;
+
+// Adds a channel to a specific group.
+app.post('/api/groups/:groupId/channels', (req, res) => {
+  const { groupId } = req.params;
+  const { name } = req.body;
+
   const group = groups.find(g => g.id === groupId);
 
   if (group) {
-    const channelIndex = group.channels.findIndex(c => c.name === channelName);
-
-    if (channelIndex !== -1) {
-      group.channels.splice(channelIndex, 1);
-      res.json({ message: 'Channel deleted successfully' });
-    } else {
-      res.status(404).json({ message: 'Channel not found in the group' });
-    }
+    group.channels.push({ name, messages: [] });
+    res.json({ message: 'Channel created' });
   } else {
     res.status(404).json({ message: 'Group not found' });
   }
 });
-// Add User to Group
+
+// Remove a user from a group
+app.delete('/api/groups/:groupId/users/:userId', (req, res) => {
+  const { groupId, userId } = req.params;
+  const group = groups.find(g => g.id === groupId);
+
+  if (!group) {
+    return res.status(404).json({ message: 'Group not found' });
+  }
+
+  const adminIndex = group.admins.findIndex(u => u === userId);
+  const memberIndex = group.members.findIndex(u => u === userId);
+
+  if (adminIndex === -1 && memberIndex === -1) {
+    return res.status(404).json({ message: 'User not found in group' });
+  }
+
+  if (adminIndex !== -1) {
+    group.admins.splice(adminIndex, 1);
+  }
+
+  if (memberIndex !== -1) {
+    group.members.splice(memberIndex, 1);
+  }
+
+  res.status(200).json({ message: 'User removed from group' });
+});
+
+// Retrieves a list of users in a specific group.
+app.get('/api/groups/:id/users', (req, res) => {
+  console.log(`Received request for group ID: ${req.params.id}`);
+  console.log(`Current groups: ${JSON.stringify(groups)}`);
+
+  const group = groups.find(g => parseInt(g.id, 10) === parseInt(req.params.id, 10));
+
+  if (group) {
+    console.log(`Group found: ${JSON.stringify(group)}`);
+    const allUsersInGroup = {
+      admins: group.admins,
+      members: group.members
+    };
+    res.json(allUsersInGroup);
+  } else {
+    console.log(`No group found for ID ${req.params.id}`);
+    res.status(404).json({ message: 'Group not found' });
+  }
+});
+
+// Adds a user to a specific group.
 app.post('/api/groups/:id/users', (req, res) => {
   console.log(`Received request to add user to group ID: ${req.params.id}`);
   const { userId } = req.body;
-  
+
   // Find the group
   const groupIndex = groups.findIndex(g => g.id === req.params.id);
-  
+
   if (groupIndex !== -1) {
     // Check if user is already a member or an admin in the group
     if (groups[groupIndex].members.includes(userId) || groups[groupIndex].admins.includes(userId)) {
       res.status(400).json({ message: 'User already in group' });
       return;
     }
-    
+
     // Add user to group members
     groups[groupIndex].members.push(userId);
     res.json({ message: 'User added to group', group: groups[groupIndex] });
@@ -254,7 +250,8 @@ app.post('/api/groups/:id/users', (req, res) => {
     res.status(404).json({ message: 'Group not found' });
   }
 });
-// Promote User to Admin in Group
+
+// Promotes a user to admin within a specific group.
 app.post('/api/groups/:id/admins', (req, res) => {
   console.log(`Received request to promote user to admin in group ID: ${req.params.id}`);
   const { adminId } = req.body;
@@ -294,7 +291,63 @@ app.post('/api/groups/:id/admins', (req, res) => {
   }
 });
 
-// API to handle access requests
+// Channel Routes
+// Retrieves messages for a specific channel in a specific group.
+app.get('/api/groups/:groupId/channels/:channelId/messages', (req, res) => {
+  const { groupId, channelId } = req.params;
+  const group = groups.find(g => g.id === groupId);
+  if (group) {
+    const channel = group.channels.find(c => c.name === channelId);
+    if (channel) {
+      res.json(channel.messages);
+    } else {
+      res.status(404).json({ message: 'Channel not found' });
+    }
+  } else {
+    res.status(404).json({ message: 'Group not found' });
+  }
+});
+
+// Posts a new message to a specific channel in a specific group.
+app.post('/api/groups/:groupId/channels/:channelId/messages', (req, res) => {
+  const { groupId, channelId } = req.params;
+  const { message } = req.body;
+  const group = groups.find(g => g.id === groupId);
+  if (group) {
+    const channel = group.channels.find(c => c.name === channelId);
+    if (channel) {
+      channel.messages.push(message);
+      res.json({ message: 'Message sent' });
+    } else {
+      res.status(404).json({ message: 'Channel not found' });
+    }
+  } else {
+    res.status(404).json({ message: 'Group not found' });
+  }
+});
+
+
+// Deletes a channel from a specific group based on channel name.
+app.delete('/api/groups/:groupId/channels/:channelName', (req, res) => {
+  const { groupId, channelName } = req.params;
+  const group = groups.find(g => g.id === groupId);
+
+  if (group) {
+    const channelIndex = group.channels.findIndex(c => c.name === channelName);
+
+    if (channelIndex !== -1) {
+      group.channels.splice(channelIndex, 1);
+      res.json({ message: 'Channel deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'Channel not found in the group' });
+    }
+  } else {
+    res.status(404).json({ message: 'Group not found' });
+  }
+});
+
+// Access Request Routes
+// Requests access to a group, adding the request to a queue.
 app.post('/api/groups/requestAccess', (req, res) => {
   const { groupId, userId } = req.body;
   const group = groups.find(g => g.id === groupId);
@@ -310,7 +363,7 @@ app.post('/api/groups/requestAccess', (req, res) => {
   }
 });
 
-// API to get the list of pending access requests for a specific group
+// Retrieves a list of pending access requests for a specific group.
 app.get('/api/groups/:groupId/requests', (req, res) => {
   console.log(`Server received request for group ID: ${req.params.groupId}`);
   const group = groups.find(g => g.id === req.params.groupId);
@@ -323,6 +376,8 @@ app.get('/api/groups/:groupId/requests', (req, res) => {
     res.status(404).json({ message: 'Group not found' });
   }
 });
+
+// Removes a pending access request for a specific group.
 app.post('/api/groups/removeRequest', (req, res) => {
   const { groupId, userId } = req.body;
   const group = groups.find(g => g.id === groupId);
@@ -340,48 +395,9 @@ app.post('/api/groups/removeRequest', (req, res) => {
     res.status(404).json({ status: 'Group not found' });
   }
 });
-// Remove a user from a group
-app.delete('/api/groups/:groupId/users/:userId', (req, res) => {
-  const { groupId, userId } = req.params;
-  const group = groups.find(g => g.id === groupId);
-
-  if (!group) {
-    return res.status(404).json({ message: 'Group not found' });
-  }
-
-  const adminIndex = group.admins.findIndex(u => u === userId);
-  const memberIndex = group.members.findIndex(u => u === userId);
-  
-  if (adminIndex === -1 && memberIndex === -1) {
-    return res.status(404).json({ message: 'User not found in group' });
-  }
-
-  if (adminIndex !== -1) {
-    group.admins.splice(adminIndex, 1);
-  }
-
-  if (memberIndex !== -1) {
-    group.members.splice(memberIndex, 1);
-  }
-
-  res.status(200).json({ message: 'User removed from group' });
-});
-
-// API to delete a group
-app.delete('/api/groups/:groupId', (req, res) => {
-  const groupId = req.params.groupId;
-  const groupIndex = groups.findIndex(g => g.id === groupId);
-
-  if (groupIndex !== -1) {
-    groups.splice(groupIndex, 1);
-    res.json({ message: 'Group deleted successfully' });
-  } else {
-    res.status(404).json({ message: 'Group not found' });
-  }
-});
 
 // Redirect all other routes to Angular app
-app.get('/*', function(req, res) {
+app.get('/*', function (req, res) {
   res.sendFile(path.join(cPath, 'index.html'));
 });
 

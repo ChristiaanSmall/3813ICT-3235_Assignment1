@@ -1,0 +1,69 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "username": "super",
+      "password": "123",
+      "email": "super@example.com",
+      "role": "Super Admin",
+      "groups": []
+    },
+    {
+      "id": "2",
+      "username": "groupadmin",
+      "password": "123",
+      "email": "admin@example.com",
+      "role": "Group Admin",
+      "groups": []
+    },
+    {
+      "id": "3",
+      "username": "user",
+      "password": "123",
+      "email": "user@example.com",
+      "role": "User",
+      "groups": []
+    }
+  ],
+  "groups": [
+    {
+      "id": "1",
+      "name": "Group1",
+      "channels": [
+        {
+          "name": "Channel1",
+          "messages": []
+        },
+        {
+          "name": "Channel2",
+          "messages": []
+        }
+      ],
+      "admins": [
+        "2"
+      ],
+      "members": [],
+      "requests": [
+        "3"
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Group2",
+      "channels": [
+        {
+          "name": "Channel1",
+          "messages": []
+        }
+      ],
+      "admins": [
+        "2",
+        "3"
+      ],
+      "members": [
+        "3"
+      ],
+      "requests": []
+    }
+  ]
+}

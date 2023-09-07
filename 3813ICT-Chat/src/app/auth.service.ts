@@ -83,7 +83,7 @@ export class AuthService {
   }
   getUsersInGroup(groupId: string): Observable<any[]> {
     const url = `${this.apiUrl}/groups/${groupId}/users`;
-    console.log(`Fetching users from: ${url}`);  // Log the URL
+    console.log(`Fetching users from: ${url}`);  
     return this.http.get<any[]>(url);
   }
   getAllUsers(): Observable<any[]> {

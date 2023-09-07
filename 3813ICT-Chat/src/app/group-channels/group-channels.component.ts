@@ -250,7 +250,6 @@ export class GroupChannelsComponent implements OnInit {
         this.currentUser = user;
         const currentUserId = user.id;
 
-        // Add a console log here
         console.log(`Current User ID: ${currentUserId}`);
       }
     });
@@ -276,7 +275,7 @@ export class GroupChannelsComponent implements OnInit {
   createChannel(): void {
     this.authService.createChannel(this.groupId, this.newChannelName).subscribe(response => {
       this.channels.push({ name: this.newChannelName, messages: [] });
-      this.newChannelName = ''; // Clear the input
+      this.newChannelName = ''; 
     });
   }
   mapUsersToNames(users: {admins: string[], members: string[]}): any {
@@ -296,7 +295,7 @@ export class GroupChannelsComponent implements OnInit {
     };
   }
   ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => sub.unsubscribe());  // Add this to unsubscribe
+    this.subscriptions.forEach(sub => sub.unsubscribe()); 
   }
   addChannelToGroup() {
     if (this.newChannelName.trim() !== '') {
