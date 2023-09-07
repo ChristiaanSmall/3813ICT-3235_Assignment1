@@ -20,13 +20,14 @@ export class DashboardComponent implements OnInit {
   otherGroups: any[] = [];
   channels: string[] = [];
   subscriptions: Subscription[] = [];
-  usernameToDelete: string  = '';
-  currentUser: any = null; 
+  usernameToDelete: string = '';
+  currentUser: any = null;
+  usernameToPromote: string = '';
   constructor(
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const authenticated = sessionStorage.getItem('authenticated');
@@ -75,23 +76,23 @@ export class DashboardComponent implements OnInit {
       () => console.log('Request failed')
     );
   }
-  
+
   isUserInGroup(group: any): boolean {
     console.log('Checking if user is in group:', group);
     console.log('Current User ID:', this.currentUserId);
-  
+
     if (this.role === 'Super Admin') {
       console.log('User is a Super Admin, has access to all groups.');
       return true;
     }
-  
+
     const isInUsers = group.members && Array.isArray(group.members) && group.members.includes(this.currentUserId);
     const isInAdmins = group.admins && Array.isArray(group.admins) && group.admins.includes(this.currentUserId);
-  
+
     const condition = isInUsers || isInAdmins;
-  
+
     console.log('Condition evaluated to:', condition);
-  
+
     return condition;
   }
   updateChannels(): void {
@@ -101,30 +102,30 @@ export class DashboardComponent implements OnInit {
       })
     );
   }
-createGroup() {
-  console.log("Before creating group, existing groups: ", this.groups);
-  if (this.newGroupName && this.currentUserId) {
-    this.authService.createGroup(this.newGroupName, this.currentUserId).subscribe(
-      () => {
-        // Group created successfully, now fetch updated group list
-        this.authService.getGroupsForUser(this.currentUserId, this.role).subscribe(
-          groups => {
-            this.groups = groups;
-            this.newGroupName = ''; // Clear the input
-          },
-          error => {
-            console.error('Error fetching groups:', error);
-          }
-        );
-      },
-      error => {
-        console.error('Error creating group:', error);
-      }
-    );
-    this.cdr.markForCheck(); // manually mark for change detection
+  createGroup() {
+    console.log("Before creating group, existing groups: ", this.groups);
+    if (this.newGroupName && this.currentUserId) {
+      this.authService.createGroup(this.newGroupName, this.currentUserId).subscribe(
+        () => {
+          // Group created successfully, now fetch updated group list
+          this.authService.getGroupsForUser(this.currentUserId, this.role).subscribe(
+            groups => {
+              this.groups = groups;
+              this.newGroupName = ''; // Clear the input
+            },
+            error => {
+              console.error('Error fetching groups:', error);
+            }
+          );
+        },
+        error => {
+          console.error('Error creating group:', error);
+        }
+      );
+      this.cdr.markForCheck(); // manually mark for change detection
+    }
+    console.log("After creating group, new groups: ", this.groups);
   }
-  console.log("After creating group, new groups: ", this.groups);
-}
 
 
   addUserToGroup() {
@@ -151,15 +152,36 @@ createGroup() {
       }
     );
   }
-  deleteUserAccount(username: string): void {
-    // Call your service method to delete the user account.
-    // Replace with actual API call
-    this.authService.deleteUser(username).subscribe(response => {
-      // Handle response
-      console.log("User account deleted:", response);
-    });
-  }
+  deletionSuccess: boolean = false;
 
+  // Method to delete a user account
+  deleteUserAccount(username: string): void {
+    this.authService.deleteUser(username).subscribe(
+      response => {
+        console.log("User account deleted:", response);
+        this.deletionSuccess = true;
+      },
+      error => {
+        console.log("Failed to delete user account:", error);
+        this.deletionSuccess = false;
+      }
+    );
+  }
+  promotionSuccess: boolean = false;
+
+  // Method to promote a user to Super Admin
+  promoteToSuperAdmin(): void {
+    this.authService.promoteToSuperAdmin(this.usernameToPromote).subscribe(
+      response => {
+        console.log("User promoted:", response);
+        this.promotionSuccess = true;
+      },
+      error => {
+        console.log("Failed to promote user:", error);
+        this.promotionSuccess = false;
+      }
+    );
+  }
   // Add this method to delete the currently logged-in user's account
   deleteOwnAccount(): void {
     if (this.currentUser) {

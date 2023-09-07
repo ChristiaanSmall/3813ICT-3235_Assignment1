@@ -68,7 +68,17 @@ app.get('/api/users/:id', (req, res) => {
     res.status(404).json({ message: 'User not found' });
   }
 });
-
+app.post('/api/promoteToSuperAdmin', (req, res) => {
+  const { username } = req.body;
+  const user = users.find(u => u.username === username);
+  
+  if (user) {
+    user.role = 'Super Admin';
+    res.json({ message: 'User promoted to Super Admin' });
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+});
 // Get Messages from a Channel in a Group
 app.get('/api/groups/:groupId/channels/:channelId/messages', (req, res) => {
   const { groupId, channelId } = req.params;
@@ -111,19 +121,19 @@ app.post('/api/register', (req, res) => {
     res.status(400).json({ message: 'Username or email already exists' });
     return;
   }
-
-  const newUser = {
-    id: (users.length + 1).toString(),
-    username,
-    password,
-    email,
-    role: 'User',
-    groups: []
-  };
-
-  users.push(newUser);
-  res.json({ message: 'User registered successfully', user: newUser });
-});
+    lastUserId++; // Increment the counter
+    const newUser = {
+      id: lastUserId.toString(),
+      username: req.body.username,
+      password: req.body.password,
+      email: req.body.email,
+      role: 'User', // default role
+      groups: [] // default groups
+    };
+  
+    users.push(newUser);
+    res.json({ message: 'User registered', user: newUser });
+  });
 
 // Add this to your server.js
 app.post('/api/groups/:groupId/channels', (req, res) => {

@@ -6,8 +6,11 @@
     <h3>Super Admin Controls</h3>
     <input type="text" placeholder="New Group Name" [(ngModel)]="newGroupName">
     <button (click)="createGroup()">Create Group</button>
-    <input type="text" placeholder="Group ID to Add Admin" [(ngModel)]="selectedGroupId">
-    <button (click)="addAdminToGroup()">Add Admin to Group</button>
+    <input type="text" placeholder="Username to Promote" [(ngModel)]="usernameToPromote">
+    <button (click)="promoteToSuperAdmin()">Promote to Super Admin</button>
+    <div *ngIf="promotionSuccess">
+      <span>User successfully promoted to Super Admin.</span>
+    </div>
   </div>
 
   <!-- UI for Group Admin -->
@@ -54,6 +57,11 @@
   <div *ngIf="role === 'Super Admin'">
     <input type="text" placeholder="Username to Delete" [(ngModel)]="usernameToDelete">
     <button (click)="deleteUserAccount(usernameToDelete)">Delete User Account</button>
+  
+    <!-- Notification for successful deletion -->
+    <div *ngIf="deletionSuccess">
+      <span>User account successfully deleted.</span>
+    </div>
   </div>
   
   <!-- UI for any user to delete their own account -->

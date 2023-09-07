@@ -96,4 +96,8 @@ export class AuthService {
   deleteUser(username: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/users/${username}`);
   }
+  // Method to promote user to Super Admin
+  promoteToSuperAdmin(username: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/promoteToSuperAdmin`, { username });
+  }
 }
