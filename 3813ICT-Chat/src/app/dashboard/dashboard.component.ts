@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -19,9 +21,11 @@ export class DashboardComponent implements OnInit {
   channels: string[] = [];
   subscriptions: Subscription[] = [];
   usernameToDelete: string  = '';
+  currentUser: any = null; 
   constructor(
     private authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -36,7 +40,18 @@ export class DashboardComponent implements OnInit {
     } else {
       console.log('User is not authenticated.');
     }
-
+    if (this.currentUserId) {
+      this.authService.getUserById(this.currentUserId)
+        .pipe(take(1))  // take only the first emitted value
+        .subscribe(
+          user => {
+            this.currentUser = user;
+          },
+          error => {
+            console.error('Error fetching the current user:', error);
+          }
+        );
+    }
     this.subscriptions.push(
       this.authService.getGroups().subscribe(allGroups => {
         this.groups = allGroups.filter(group => this.isUserInGroup(group));
@@ -136,9 +151,30 @@ createGroup() {
       }
     );
   }
+  deleteUserAccount(username: string): void {
+    // Call your service method to delete the user account.
+    // Replace with actual API call
+    this.authService.deleteUser(username).subscribe(response => {
+      // Handle response
+      console.log("User account deleted:", response);
+    });
+  }
 
+  // Add this method to delete the currently logged-in user's account
+  deleteOwnAccount(): void {
+    if (this.currentUser) {
+      this.authService.deleteUser(this.currentUser.username).subscribe(response => {
+        console.log("Own account deleted:", response);
+      });
+      this.logout();
+    }
+  }
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
-
+  logout() {
+    sessionStorage.clear();
+    console.log("Logged Out Successfully");
+    this.router.navigate(['/login']);
+  }
 }

@@ -5,7 +5,7 @@ const path = require('path');  // Add this line
 const app = express();
 const PORT = 3000;
 const cPath = 'C:/Users/Bojack/Documents/GitHub/3813ICT-3235_Assignment1/3813ICT-Chat/dist/3813-ict-chat';
-
+let lastUserId = 0;
 //app.use(cors());
 app.use(bodyParser.json());
 
@@ -187,6 +187,18 @@ app.post('/api/createGroup', (req, res) => {
   };
   groups.push(newGroup);
   res.json({ message: 'Group created', group: newGroup });
+});
+// delete a user
+app.delete('/api/users/:username', (req, res) => {
+  const username = req.params.username;
+  const userIndex = users.findIndex(u => u.username === username);
+  
+  if (userIndex !== -1) {
+    users.splice(userIndex, 1);
+    res.json({ message: 'User account deleted successfully' });
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
 });
 // Delete a channel from a group
 app.delete('/api/groups/:groupId/channels/:channelName', (req, res) => {

@@ -93,5 +93,7 @@ export class AuthService {
   register(username: string, password: string, email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, { username, password, email });
   }
-
+  deleteUser(username: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/users/${username}`);
+  }
 }

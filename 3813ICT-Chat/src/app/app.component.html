@@ -1,8 +1,9 @@
 <nav>
   <ul>
-    <li><a routerLink="/login">Login</a></li>
-    <li><a routerLink="/register">Register</a></li>
-    <li><a routerLink="/dashboard">Dashboard</a></li>
+    <li *ngIf="!user"><a routerLink="/login">Login</a></li>
+    <li *ngIf="!user"><a routerLink="/register">Register</a></li>
+    <li *ngIf="user"><a routerLink="/dashboard">Dashboard</a></li>
+    <li *ngIf="user"><a (click)="logout()">Logout</a></li>
     <li><a routerLink="/chat-window">Chat Window</a></li>
   </ul>
 </nav>
