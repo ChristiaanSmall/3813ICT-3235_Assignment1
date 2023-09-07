@@ -111,7 +111,7 @@ export class DashboardComponent implements OnInit {
           this.authService.getGroupsForUser(this.currentUserId, this.role).subscribe(
             groups => {
               this.groups = groups;
-              this.newGroupName = ''; // Clear the input
+              this.newGroupName = '';
             },
             error => {
               console.error('Error fetching groups:', error);

@@ -25,3 +25,29 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+
+# Data Structures
+
+## Users
+
+- `id`: String - Unique identifier for each user.
+- `username`: String - The username for login.
+- `password`: String - The password for login.
+- `email`: String - Email associated with the user.
+- `role`: String - Specifies if the user is a 'Super Admin', 'Group Admin', or 'User'.
+- `groups`: Array of Strings - IDs of groups that the user belongs to.
+
+## Groups
+
+- `id`: String - Unique identifier for each group.
+- `name`: String - The name of the group.
+- `channels`: Array of Channel objects - Contains the channels within the group.
+- `admins`: Array of Strings - IDs of users who are administrators of the group.
+- `members`: Array of Strings - IDs of users who are members of the group.
+- `requests`: Array of Strings - IDs of users who have requested to join the group.
+
+## Channels
+
+- `name`: String - Name of the individual channel within a group.
+- `messages`: Array - Contains the messages sent within the channel.

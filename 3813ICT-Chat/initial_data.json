@@ -23,6 +23,22 @@
       "email": "user@example.com",
       "role": "User",
       "groups": []
+    },
+    {
+      "id": "4",
+      "username": "newuser1",
+      "password": "password1",
+      "email": "newuser1@example.com",
+      "role": "User",
+      "groups": []
+    },
+    {
+      "id": "5",
+      "username": "newuser2",
+      "password": "password2",
+      "email": "newuser2@example.com",
+      "role": "User",
+      "groups": []
     }
   ],
   "groups": [
@@ -62,6 +78,24 @@
       ],
       "members": [
         "3"
+      ],
+      "requests": []
+    },
+    {
+      "id": "3",
+      "name": "Group3",
+      "channels": [
+        {
+          "name": "Channel1",
+          "messages": []
+        }
+      ],
+      "admins": [
+        "4"
+      ],
+      "members": [
+        "4",
+        "5"
       ],
       "requests": []
     }

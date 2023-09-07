@@ -1,36 +1,67 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const path = require('path');  // Add this line
+const fs = require('fs');
+const path = require('path');
 const app = express();
 const PORT = 3000;
 const cPath = 'C:/Users/Bojack/Documents/GitHub/3813ICT-3235_Assignment1/3813ICT-Chat/dist/3813-ict-chat';
-//app.use(cors());
+
 app.use(bodyParser.json());
 
-// Serve static files from Angular build folder
-
 app.use(express.static(cPath));
-// Initial data
+
 let lastUserId = 0;
 
-let users = [
-  { id: '1', username: 'super', password: '123', email: 'super@example.com', role: 'Super Admin', groups: [] },
-  { id: '2', username: 'groupadmin', password: '123', email: 'admin@example.com', role: 'Group Admin', groups: [] },
-  { id: '3', username: 'user', password: '123', email: 'user@example.com', role: 'User', groups: [] }
-];
-if (users.length > 0) {
-  lastUserId = Math.max(...users.map(u => Number(u.id)));
-}
-let groups = [
-  { id: '1', name: 'Group1', channels: [{ name: 'Channel1', messages: [] }, { name: 'Channel2', messages: [] }], admins: ['2'], members: [], requests: ["3"] },
-  { id: '2', name: 'Group2', channels: [{ name: 'Channel1', messages: [] }], admins: ['2', '3'], members: ['3'], requests: [] }
-];
+let users = [];
+let groups = [];
 let currentUser = null;
+
+// Function to save users and groups data to JSON files
+function saveDataToJSON() {
+  const data = {
+    users,
+    groups
+  };
+  const jsonContent = JSON.stringify(data, null, 2); // Pretty-print JSON
+
+  fs.writeFileSync('initial_data.json', jsonContent); // Update the initial_data.json file
+}
+
+// Function to load users and groups data from JSON files
+function loadDataFromJSON() {
+  try {
+    const data = fs.readFileSync('initial_data.json', 'utf8');
+    const jsonData = JSON.parse(data);
+
+    if (jsonData.users) {
+      users = jsonData.users;
+      lastUserId = Math.max(...users.map(u => Number(u.id)));
+    }
+
+    if (jsonData.groups) {
+      groups = jsonData.groups;
+    }
+  } catch (error) {
+    console.error('Error loading data from JSON:', error.message);
+  }
+}
+
+// Load data from JSON files when the server starts
+loadDataFromJSON();
+
+function saveDataMiddleware(req, res, next) {
+  // Run the route's handler function
+  res.on('finish', () => {
+    saveDataToJSON();
+  });
+
+  next(); // Continue to the route's handler
+}
 
 // User Routes
 // Authenticates user credentials and returns an authentication token.
-app.post('/api/authenticate', (req, res) => {
+app.post('/api/authenticate', saveDataMiddleware, (req, res) => {
   console.log('Received:', req.body);  // Logging the received data
   const { username, password } = req.body;
   const user = users.find(u => u.username === username && u.password === password);
@@ -46,7 +77,7 @@ app.post('/api/authenticate', (req, res) => {
 });
 
 // Returns the current authenticated user's information.
-app.get('/api/currentUser', (req, res) => {
+app.get('/api/currentUser', saveDataMiddleware, (req, res) => {
   if (currentUser) {
     res.json(currentUser);
   } else {
@@ -55,7 +86,7 @@ app.get('/api/currentUser', (req, res) => {
 });
 
 // Registers a new user and returns the new user's information.
-app.post('/api/register', (req, res) => {
+app.post('/api/register', saveDataMiddleware, (req, res) => {
   const { username, password, email } = req.body;
   const userExists = users.some(u => u.username === username || u.email === email);
 
@@ -79,7 +110,7 @@ app.post('/api/register', (req, res) => {
 });
 
 // Promotes an existing user to Super Admin role.
-app.post('/api/promoteToSuperAdmin', (req, res) => {
+app.post('/api/promoteToSuperAdmin', saveDataMiddleware, (req, res) => {
   const { username } = req.body;
   const user = users.find(u => u.username === username);
 
@@ -92,12 +123,12 @@ app.post('/api/promoteToSuperAdmin', (req, res) => {
 });
 
 // Retrieves a list of all users.
-app.get('/api/users', (req, res) => {
+app.get('/api/users', saveDataMiddleware, (req, res) => {
   res.json(users);
 });
 
 // Retrieves user information based on user ID.
-app.get('/api/users/:id', (req, res) => {
+app.get('/api/users/:id', saveDataMiddleware, (req, res) => {
   const userId = req.params.id;
   const user = users.find(u => u.id === userId);
 
@@ -109,7 +140,7 @@ app.get('/api/users/:id', (req, res) => {
 });
 
 // Deletes a user based on username.
-app.delete('/api/users/:username', (req, res) => {
+app.delete('/api/users/:username', saveDataMiddleware, (req, res) => {
   const username = req.params.username;
   const userIndex = users.findIndex(u => u.username === username);
 
@@ -123,12 +154,12 @@ app.delete('/api/users/:username', (req, res) => {
 
 // Group Routes
 // Retrieves a list of all groups.
-app.get('/api/groups', (req, res) => {
+app.get('/api/groups', saveDataMiddleware, (req, res) => {
   res.json(groups);
 });
 
 // API to delete a group
-app.delete('/api/groups/:groupId', (req, res) => {
+app.delete('/api/groups/:groupId', saveDataMiddleware, (req, res) => {
   const groupId = req.params.groupId;
   const groupIndex = groups.findIndex(g => g.id === groupId);
 
@@ -141,7 +172,7 @@ app.delete('/api/groups/:groupId', (req, res) => {
 });
 
 // Creates a new group and returns the new group's information.
-app.post('/api/createGroup', (req, res) => {
+app.post('/api/createGroup', saveDataMiddleware, (req, res) => {
   const { groupName, adminId } = req.body;
   const newGroupId = (groups.length + 1).toString();
   const newGroup = {
@@ -156,7 +187,7 @@ app.post('/api/createGroup', (req, res) => {
 });
 
 // Retrieves a list of groups for the authenticated user.
-app.get('/api/groupsForUser', (req, res) => {
+app.get('/api/groupsForUser', saveDataMiddleware, (req, res) => {
   const { userId, role } = req.query;
   if (role === 'Super Admin') {
     res.json(groups);
@@ -167,7 +198,7 @@ app.get('/api/groupsForUser', (req, res) => {
 });
 
 // Adds a channel to a specific group.
-app.post('/api/groups/:groupId/channels', (req, res) => {
+app.post('/api/groups/:groupId/channels', saveDataMiddleware, (req, res) => {
   const { groupId } = req.params;
   const { name } = req.body;
 
@@ -182,7 +213,7 @@ app.post('/api/groups/:groupId/channels', (req, res) => {
 });
 
 // Remove a user from a group
-app.delete('/api/groups/:groupId/users/:userId', (req, res) => {
+app.delete('/api/groups/:groupId/users/:userId', saveDataMiddleware, (req, res) => {
   const { groupId, userId } = req.params;
   const group = groups.find(g => g.id === groupId);
 
@@ -209,7 +240,7 @@ app.delete('/api/groups/:groupId/users/:userId', (req, res) => {
 });
 
 // Retrieves a list of users in a specific group.
-app.get('/api/groups/:id/users', (req, res) => {
+app.get('/api/groups/:id/users', saveDataMiddleware, (req, res) => {
   console.log(`Received request for group ID: ${req.params.id}`);
   console.log(`Current groups: ${JSON.stringify(groups)}`);
 
@@ -229,7 +260,7 @@ app.get('/api/groups/:id/users', (req, res) => {
 });
 
 // Adds a user to a specific group.
-app.post('/api/groups/:id/users', (req, res) => {
+app.post('/api/groups/:id/users', saveDataMiddleware, (req, res) => {
   console.log(`Received request to add user to group ID: ${req.params.id}`);
   const { userId } = req.body;
 
@@ -252,7 +283,7 @@ app.post('/api/groups/:id/users', (req, res) => {
 });
 
 // Promotes a user to admin within a specific group.
-app.post('/api/groups/:id/admins', (req, res) => {
+app.post('/api/groups/:id/admins', saveDataMiddleware, (req, res) => {
   console.log(`Received request to promote user to admin in group ID: ${req.params.id}`);
   const { adminId } = req.body;
 
@@ -293,7 +324,7 @@ app.post('/api/groups/:id/admins', (req, res) => {
 
 // Channel Routes
 // Retrieves messages for a specific channel in a specific group.
-app.get('/api/groups/:groupId/channels/:channelId/messages', (req, res) => {
+app.get('/api/groups/:groupId/channels/:channelId/messages', saveDataMiddleware, (req, res) => {
   const { groupId, channelId } = req.params;
   const group = groups.find(g => g.id === groupId);
   if (group) {
@@ -309,7 +340,7 @@ app.get('/api/groups/:groupId/channels/:channelId/messages', (req, res) => {
 });
 
 // Posts a new message to a specific channel in a specific group.
-app.post('/api/groups/:groupId/channels/:channelId/messages', (req, res) => {
+app.post('/api/groups/:groupId/channels/:channelId/messages', saveDataMiddleware, (req, res) => {
   const { groupId, channelId } = req.params;
   const { message } = req.body;
   const group = groups.find(g => g.id === groupId);
@@ -328,7 +359,7 @@ app.post('/api/groups/:groupId/channels/:channelId/messages', (req, res) => {
 
 
 // Deletes a channel from a specific group based on channel name.
-app.delete('/api/groups/:groupId/channels/:channelName', (req, res) => {
+app.delete('/api/groups/:groupId/channels/:channelName', saveDataMiddleware, (req, res) => {
   const { groupId, channelName } = req.params;
   const group = groups.find(g => g.id === groupId);
 
@@ -348,7 +379,7 @@ app.delete('/api/groups/:groupId/channels/:channelName', (req, res) => {
 
 // Access Request Routes
 // Requests access to a group, adding the request to a queue.
-app.post('/api/groups/requestAccess', (req, res) => {
+app.post('/api/groups/requestAccess', saveDataMiddleware, (req, res) => {
   const { groupId, userId } = req.body;
   const group = groups.find(g => g.id === groupId);
   console.log(`Received request for group ID: ${groupId}`);
@@ -364,7 +395,7 @@ app.post('/api/groups/requestAccess', (req, res) => {
 });
 
 // Retrieves a list of pending access requests for a specific group.
-app.get('/api/groups/:groupId/requests', (req, res) => {
+app.get('/api/groups/:groupId/requests', saveDataMiddleware, (req, res) => {
   console.log(`Server received request for group ID: ${req.params.groupId}`);
   const group = groups.find(g => g.id === req.params.groupId);
 
@@ -378,7 +409,7 @@ app.get('/api/groups/:groupId/requests', (req, res) => {
 });
 
 // Removes a pending access request for a specific group.
-app.post('/api/groups/removeRequest', (req, res) => {
+app.post('/api/groups/removeRequest', saveDataMiddleware, (req, res) => {
   const { groupId, userId } = req.body;
   const group = groups.find(g => g.id === groupId);
 
@@ -397,7 +428,7 @@ app.post('/api/groups/removeRequest', (req, res) => {
 });
 
 // Redirect all other routes to Angular app
-app.get('/*', function (req, res) {
+app.get('/*', saveDataMiddleware, function (req, res) {
   res.sendFile(path.join(cPath, 'index.html'));
 });
 
