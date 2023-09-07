@@ -165,7 +165,24 @@ app.post('/api/createGroup', (req, res) => {
   groups.push(newGroup);
   res.json({ message: 'Group created', group: newGroup });
 });
+// Delete a channel from a group
+app.delete('/api/groups/:groupId/channels/:channelName', (req, res) => {
+  const { groupId, channelName } = req.params;
+  const group = groups.find(g => g.id === groupId);
 
+  if (group) {
+    const channelIndex = group.channels.findIndex(c => c.name === channelName);
+
+    if (channelIndex !== -1) {
+      group.channels.splice(channelIndex, 1);
+      res.json({ message: 'Channel deleted successfully' });
+    } else {
+      res.status(404).json({ message: 'Channel not found in the group' });
+    }
+  } else {
+    res.status(404).json({ message: 'Group not found' });
+  }
+});
 // Add User to Group
 app.post('/api/groups/:id/users', (req, res) => {
   console.log(`Received request to add user to group ID: ${req.params.id}`);

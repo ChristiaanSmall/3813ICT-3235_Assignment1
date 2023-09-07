@@ -55,7 +55,9 @@
   <div *ngFor="let channel of channels">
     <h3>{{ channel.name }}</h3>
     <button (click)="goToChannel(groupId, channel.name)">Go to Channel</button>
-    <button *ngIf="isUserAdminInGroup()" (click)="deleteChannelFromGroup(channel.name)">Delete</button>
+    <div *ngIf="isUserAdminInGroup()">
+    <button (click)="deleteChannelFromGroup(channel.name)">Delete</button>
+    </div> 
   </div>
 
   

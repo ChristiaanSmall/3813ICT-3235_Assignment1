@@ -72,7 +72,9 @@ export class AuthService {
   addAdminToGroup(adminId: string, groupId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/groups/${groupId}/admins`, { adminId });
   }
-
+  deleteChannelFromGroup(channelName: string, groupId: string): Observable<any> {
+    return this.http.delete(`/api/groups/${groupId}/channels/${channelName}`);
+  }
   addChannelToGroup(channelName: string, groupId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/groups/${groupId}/channels`, { channelName });
   }
