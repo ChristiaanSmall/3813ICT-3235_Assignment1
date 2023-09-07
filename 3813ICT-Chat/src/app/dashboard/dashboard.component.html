@@ -1,69 +1,99 @@
 <div class="container">
   <h1>Dashboard</h1>
 
-  <!-- UI for Super Admin -->
-  <div *ngIf="role === 'Super Admin'">
-    <h3>Super Admin Controls</h3>
-    <input type="text" placeholder="New Group Name" [(ngModel)]="newGroupName">
-    <button (click)="createGroup()">Create Group</button>
-    <input type="text" placeholder="Username to Promote" [(ngModel)]="usernameToPromote">
-    <button (click)="promoteToSuperAdmin()">Promote to Super Admin</button>
-    <div *ngIf="promotionSuccess">
-      <span>User successfully promoted to Super Admin.</span>
-    </div>
+  <!-- Super Admin Section -->
+  <div *ngIf="role === 'Super Admin'" class="admin-controls">
+      <h3 class="section-title">Super Admin Controls</h3>
+      <div class="form-row">
+          <div class="col-md-6">
+              <input type="text" class="form-control" placeholder="New Group Name" [(ngModel)]="newGroupName">
+          </div>
+          <div class="col-md-6">
+              <button class="btn btn-primary btn-block" (click)="createGroup()">Create Group</button>
+          </div>
+      </div>
+
+      <div class="form-row">
+          <div class="col-md-6">
+              <input type="text" class="form-control" placeholder="Username to Promote" [(ngModel)]="usernameToPromote">
+          </div>
+          <div class="col-md-6">
+              <button class="btn btn-success btn-block" (click)="promoteToSuperAdmin()">Promote to Super Admin</button>
+          </div>
+      </div>
+
+      <div *ngIf="promotionSuccess" class="alert alert-success">
+          User successfully promoted to Super Admin.
+      </div>
   </div>
 
-  <!-- UI for Group Admin -->
-  <div *ngIf="role === 'Group Admin'">
-    <h3>Group Admin Controls</h3>
-    <input type="text" placeholder="New Group Name" [(ngModel)]="newGroupName">
-    <button (click)="createGroup()">Create Group</button>
-    <input type="text" placeholder="New Channel Name" [(ngModel)]="newChannelName">
-    <button (click)="createChannel()">Create Channel</button>
-    <input type="text" placeholder="Group ID to Add User" [(ngModel)]="selectedGroupId">
-    <button (click)="addUserToGroup()">Add User to Group</button>
+  <!-- Group Admin Section -->
+  <div *ngIf="role === 'Group Admin'" class="admin-controls">
+      <h3 class="section-title">Group Admin Controls</h3>
+      <div class="form-row">
+          <div class="col-md-6">
+              <input type="text" class="form-control" placeholder="New Group Name" [(ngModel)]="newGroupName">
+          </div>
+          <div class="col-md-6">
+              <button class="btn btn-primary btn-block" (click)="createGroup()">Create Group</button>
+          </div>
+      </div>
+
+      <div class="form-row">
+          <div class="col-md-6">
+              <input type="text" class="form-control" placeholder="New Channel Name" [(ngModel)]="newChannelName">
+          </div>
+          <div class="col-md-6">
+              <button class="btn btn-primary btn-block" (click)="createChannel()">Create Channel</button>
+          </div>
+      </div>
+
+      <div class="form-row">
+          <div class="col-md-6">
+              <input type="text" class="form-control" placeholder="Group ID to Add User" [(ngModel)]="selectedGroupId">
+          </div>
+          <div class="col-md-6">
+              <button class="btn btn-primary btn-block" (click)="addUserToGroup()">Add User to Group</button>
+          </div>
+      </div>
   </div>
 
-  <!-- UI for User -->
-  <div *ngIf="role === 'User'">
-    <h3>User Controls</h3>
-    <!-- User-specific controls can go here -->
-  </div>
+
+
+    <!-- Your Groups -->
   <h4>Your Groups</h4>
-  <ul>
-    <li *ngFor="let group of groups">
-      {{ group.name }}
-      <a [routerLink]="['/group-channels', group.id]">Select</a>
-    </li>
-  </ul>
-  
-  <h4>Other Groups</h4>
-  <ul>
-    <li *ngFor="let group of otherGroups">
-      {{ group.name }}
-      <button (click)="requestAccess(group.id)">Request Access</button>
-    </li>
-  </ul>
-
-  <h4>Channels in Selected Group</h4>
-  <ul>
-    <li *ngFor="let channel of channels">{{ channel }}</li>
-  </ul>
-</div>
-<div>
-  <h3>Account Deletion</h3>
-  
-  <!-- UI for Super Admin to delete any account -->
-  <div *ngIf="role === 'Super Admin'">
-    <input type="text" placeholder="Username to Delete" [(ngModel)]="usernameToDelete">
-    <button (click)="deleteUserAccount(usernameToDelete)">Delete User Account</button>
-  
-    <!-- Notification for successful deletion -->
-    <div *ngIf="deletionSuccess">
-      <span>User account successfully deleted.</span>
+  <div class="row">
+    <div *ngFor="let group of groups" class="col-md-4">
+        <a [routerLink]="['/group-channels', group.id]" class="group-button btn btn-primary btn-block mb-3" style="font-family: 'Helvetica Neue', sans-serif;">{{ group.name }}</a>
+        <br>
     </div>
   </div>
-  
-  <!-- UI for any user to delete their own account -->
-  <button (click)="deleteOwnAccount()">Delete My Account</button>
+
+  <!-- Other Groups -->
+  <h4>Other Groups</h4>
+  <div class="row">
+    <div *ngFor="let group of otherGroups" class="col-md-4">
+      <button class="group-button btn btn-success btn-block mb-3" (click)="requestAccess(group.id)" style="font-family: 'Helvetica Neue', sans-serif; width: 100%;">Request Access to {{ group.name }}</button>
+      <br>
+  </div>
+  </div>
+
+  <!-- Account Deletion Section -->
+  <div class="account-deletion">
+    <h3>Account Deletion</h3>
+    <div class="form-row">
+        <div class="col-md-6 input-group mb-3">
+            <input type="text" class="form-control" placeholder="Username to Delete" [(ngModel)]="usernameToDelete">
+        </div>
+        <div class="col-md-6">
+            <button class="btn btn-danger w-100" (click)="deleteUserAccount(usernameToDelete)">Delete User Account</button>
+        </div>
+    </div>
+
+    <div *ngIf="deletionSuccess" class="alert alert-success">
+        User account successfully deleted.
+    </div>
+  </div>
+
 </div>
+

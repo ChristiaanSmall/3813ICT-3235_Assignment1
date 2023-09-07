@@ -1,0 +1,70 @@
+.container {
+    background-color: #f2f2f2;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+h1, h3, h4 {
+    color: #333;
+}
+
+h1 {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+h4 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.input-group, .btn, .list-group-item {
+    border-radius: 10px;
+}
+
+.list-group-item {
+    margin-bottom: 0.5rem;
+}
+
+.alert-success {
+    font-weight: bold;
+}
+
+.account-deletion {
+    margin-top: 2rem;
+}
+
+.admin-controls, .user-controls {
+    padding: 1rem;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    margin-top: 1.5rem;
+}
+.group-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px; /* Adjust the height as needed */
+    border-radius: 5px; /* Rounded corners */
+    font-weight: bold; /* Bold text */
+    text-decoration: none; /* Remove underline */
+    color: #ffffff; /* Text color */
+    transition: background-color 0.3s ease-in-out; /* Smooth hover effect */
+    background-color: #007bff; /* Change background color on hover */
+
+}
+
+.group-button:hover {
+    background-color: #8dc4ff; /* Change background color on hover */
+}
+body, h1, h2, h3, h4, h5, h6 {
+    font-family: 'Helvetica Neue', sans-serif;
+}
