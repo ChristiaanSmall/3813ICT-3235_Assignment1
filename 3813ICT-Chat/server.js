@@ -14,9 +14,9 @@ app.use(bodyParser.json());
 app.use(express.static(cPath));
 // Initial data
 let users = [
-  { id: '1', username: 'super', password: '123', role: 'Super Admin', groups: [] },
-  { id: '2', username: 'groupadmin', password: '123', role: 'Group Admin', groups: [] },
-  { id: '3', username: 'user', password: '123', role: 'User', groups: [] }
+  { id: '1', username: 'super', password: '123', email: 'super@example.com', role: 'Super Admin', groups: [] },
+  { id: '2', username: 'groupadmin', password: '123', email: 'admin@example.com', role: 'Group Admin', groups: [] },
+  { id: '3', username: 'user', password: '123', email: 'user@example.com', role: 'User', groups: [] }
 ];
 
 let groups = [
@@ -102,6 +102,29 @@ app.post('/api/groups/:groupId/channels/:channelId/messages', (req, res) => {
     res.status(404).json({ message: 'Group not found' });
   }
 });
+// Add this to your server.js
+app.post('/api/register', (req, res) => {
+  const { username, password, email } = req.body;
+  const userExists = users.some(u => u.username === username || u.email === email);
+
+  if (userExists) {
+    res.status(400).json({ message: 'Username or email already exists' });
+    return;
+  }
+
+  const newUser = {
+    id: (users.length + 1).toString(),
+    username,
+    password,
+    email,
+    role: 'User',
+    groups: []
+  };
+
+  users.push(newUser);
+  res.json({ message: 'User registered successfully', user: newUser });
+});
+
 // Add this to your server.js
 app.post('/api/groups/:groupId/channels', (req, res) => {
   const { groupId } = req.params;

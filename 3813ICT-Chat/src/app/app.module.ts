@@ -9,6 +9,7 @@ import { LoginComponent } from './login/login.component';
 import { ChatWindowComponent } from './chat-window/chat-window.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { GroupChannelsComponent } from './group-channels/group-channels.component';
+import { RegisterComponent } from './register/register.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { GroupChannelsComponent } from './group-channels/group-channels.componen
     LoginComponent,
     ChatWindowComponent,
     DashboardComponent,
-    GroupChannelsComponent
+    GroupChannelsComponent,
+    RegisterComponent
   ],
   imports: [
     BrowserModule,

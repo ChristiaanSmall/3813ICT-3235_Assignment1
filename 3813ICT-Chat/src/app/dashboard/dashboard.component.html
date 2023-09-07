@@ -47,3 +47,15 @@
     <li *ngFor="let channel of channels">{{ channel }}</li>
   </ul>
 </div>
+<div>
+  <h3>Account Deletion</h3>
+  
+  <!-- UI for Super Admin to delete any account -->
+  <div *ngIf="role === 'Super Admin'">
+    <input type="text" placeholder="Username to Delete" [(ngModel)]="usernameToDelete">
+    <button (click)="deleteUserAccount(usernameToDelete)">Delete User Account</button>
+  </div>
+  
+  <!-- UI for any user to delete their own account -->
+  <button (click)="deleteOwnAccount()">Delete My Account</button>
+</div>

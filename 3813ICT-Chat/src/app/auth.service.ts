@@ -89,4 +89,9 @@ export class AuthService {
   getAllUsers(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/users`);
   }
+    // Add this method to auth.service.ts
+  register(username: string, password: string, email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/register`, { username, password, email });
+  }
+
 }

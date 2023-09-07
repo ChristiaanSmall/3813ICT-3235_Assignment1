@@ -18,7 +18,7 @@ export class DashboardComponent implements OnInit {
   otherGroups: any[] = [];
   channels: string[] = [];
   subscriptions: Subscription[] = [];
-
+  usernameToDelete: string  = '';
   constructor(
     private authService: AuthService,
     private cdr: ChangeDetectorRef
