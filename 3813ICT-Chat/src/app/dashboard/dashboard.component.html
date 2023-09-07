@@ -81,7 +81,8 @@
   <!-- Account Deletion Section -->
   <div class="account-deletion">
     <h3>Account Deletion</h3>
-    <div class="form-row">
+    <div *ngIf="role === 'Super Admin'">
+      <div class="form-row">
         <div class="col-md-6 input-group mb-3">
             <input type="text" class="form-control" placeholder="Username to Delete" [(ngModel)]="usernameToDelete">
         </div>
@@ -90,9 +91,12 @@
         </div>
     </div>
 
-    <div *ngIf="deletionSuccess" class="alert alert-success">
-        User account successfully deleted.
+      <div *ngIf="deletionSuccess" class="alert alert-success">
+          User account successfully deleted.
+      </div>
     </div>
+    <button (click)="deleteOwnAccount()">Delete My Account</button>
+
   </div>
 
 </div>

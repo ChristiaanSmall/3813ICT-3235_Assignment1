@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-chat-window',
@@ -15,7 +16,7 @@ export class ChatWindowComponent implements OnInit {
   channelId: string = "";
   private apiUrl = 'http://localhost:3000/api';
 
-  constructor(private route: ActivatedRoute, private http: HttpClient) { }
+  constructor(private route: ActivatedRoute, private http: HttpClient, private router: Router) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -36,5 +37,9 @@ export class ChatWindowComponent implements OnInit {
     this.http.post(`${this.apiUrl}/groups/${this.groupId}/channels/${this.channelId}/messages`, { message }).subscribe(response => {
       this.messages.push(message);
     });
+  }
+  goBack(): void {
+    // Replace '/previous-page' with the URL you want to navigate back to
+    this.router.navigate(['/dashboard']);
   }
 }

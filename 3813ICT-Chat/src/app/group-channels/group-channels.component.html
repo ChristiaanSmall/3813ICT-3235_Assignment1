@@ -1,64 +1,72 @@
 <div class="container">
-  <h1>Channels in Selected Group</h1>
-  <ul>
-    <li *ngFor="let channel of channels">{{ channel.name }}</li>
-  </ul>
-  
-  <div *ngIf="isUserAdminInGroup()">
-    <!-- Admin Controls -->
-    <h2>Admin Controls</h2>
-    <input type="text" placeholder="Username" [(ngModel)]="newUsername">
-    <button (click)="addUserToGroup()">Add User</button>
-    <input type="text" placeholder="Username" [(ngModel)]="promoteUsername">
-    <button (click)="promoteToGroupAdmin()">Promote to Group Admin</button>
-    <p>{{ addUserMessage }}</p>
-    <p>{{ promoteUserMessage }}</p>
-  </div>
-  <button *ngIf="isUserAdminInGroup()" (click)="deleteGroup()">Delete Group</button>
 
+
+  <div *ngIf="isUserAdminInGroup()">
+      <!-- Admin Controls -->
+      <h2>Admin Controls</h2>
+      <div class="admin-controls">
+        <div class="input-button-group">
+          <input type="text" placeholder="Username" [(ngModel)]="newUsername" class="admin-input">
+          <button class="channel-button admin-button" (click)="addUserToGroup()">Add User</button>
+        </div>
+        <div class="input-button-group">
+          <input type="text" placeholder="Username" [(ngModel)]="promoteUsername">
+          <button class="admin-button" (click)="promoteToGroupAdmin()">Promote to Group Admin</button>
+        </div>
+          <p class="admin-message">{{ addUserMessage }}</p>
+          <p class="admin-message">{{ promoteUserMessage }}</p>
+      </div>
+      <div style="display: flex; justify-content: center;">
+        <button *ngIf="isUserAdminInGroup()" class="delete-button" style="margin-top: 1rem;" (click)="deleteGroup()">Delete Group</button>
+      </div>
+    </div>
 
   <!-- List of Users in the Group -->
   <div *ngIf="usersInGroup.admins.length > 0 || usersInGroup.members.length > 0">
-    <h2>Admins</h2>
-    <ul>
-      <li *ngFor="let admin of usersInGroup.admins"> 
-        {{ admin }}
-        <button *ngIf="isUserAdminInGroup()" (click)="removeUserFromGroup(admin)">Ban</button> 
-      </li>
-    </ul>
-    
-    <!-- Members -->
-    <h2>Members</h2>
-    <ul>
-      <li *ngFor="let member of usersInGroup.members"> 
-        {{ member }}
-        <button *ngIf="isUserAdminInGroup()" (click)="removeUserFromGroup(member)">Ban</button> 
-      </li>
-    </ul>
+      <h2>Admins</h2>
+      <ul>
+          <li *ngFor="let admin of usersInGroup.admins">
+              {{ admin }}
+              <button *ngIf="isUserAdminInGroup()" class="channel-button" style="background-color: #dc3545;" (click)="removeUserFromGroup(admin)">Ban</button>
+          </li>
+      </ul>
 
-  <div *ngIf="isUserAdminInGroup()">
-    <h4>Pending Group Access Requests</h4>
-    <ul>
-      <li *ngFor="let requestId of groupRequests">
-        {{ userNames[requestId] }}
-        <button (click)="approveRequest(requestId)">Approve</button>
-      </li>
-    </ul>
+      <!-- Members -->
+      <h2>Members</h2>
+      <ul>
+          <li *ngFor="let member of usersInGroup.members">
+              {{ member }}
+              <button *ngIf="isUserAdminInGroup()" class="channel-button" style="background-color: #dc3545;" (click)="removeUserFromGroup(member)">Ban</button>
+          </li>
+      </ul>
+
+      <div *ngIf="isUserAdminInGroup()">
+          <h4>Pending Group Access Requests</h4>
+          <ul>
+              <li *ngFor="let requestId of groupRequests">
+                  {{ userNames[requestId] }}
+                  <button class="admin-button" (click)="approveRequest(requestId)">Approve</button>
+              </li>
+          </ul>
+      </div>
   </div>
+
   <!-- Add this to your group-channels.component.html -->
-  <div *ngIf="isUserAdminInGroup()">
-    <form (submit)="createChannel()">
-      <input type="text" [(ngModel)]="newChannelName" placeholder="Enter new channel name">
-      <button type="submit">Create Channel</button>
-    </form>
+  <div class="button-container" *ngIf="isUserAdminInGroup()">
+      <form class="admin-form" (submit)="createChannel()">
+          <input type="text" [(ngModel)]="newChannelName" placeholder="Enter new channel name">
+          <button type="submit" class="admin-button">Create Channel</button>
+      </form>
   </div>
-  <div *ngFor="let channel of channels">
-    <h3>{{ channel.name }}</h3>
-    <button (click)="goToChannel(groupId, channel.name)">Go to Channel</button>
-    <div *ngIf="isUserAdminInGroup()">
-    <button (click)="deleteChannelFromGroup(channel.name)">Delete</button>
-    </div> 
-  </div>
+  <h1>Channels in Selected Group</h1>
 
-  
+  <div *ngFor="let channel of channels">
+      <h3>{{ channel.name }}</h3>
+      <div class="button-row">
+        <button class="channel-button" (click)="goToChannel(groupId, channel.name)">Go to Channel</button>
+        <div *ngIf="isUserAdminInGroup()">
+          <button class="channel-button" style="background-color: #dc3545;" (click)="deleteChannelFromGroup(channel.name)">Delete</button>
+        </div>
+      </div>
+  </div>
 </div>

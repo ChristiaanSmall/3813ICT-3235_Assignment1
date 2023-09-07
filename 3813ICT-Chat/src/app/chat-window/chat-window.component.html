@@ -1,9 +1,19 @@
-<div class="chat-container">
-  <div class="message-display">
-    <div *ngFor="let message of messages">
-      {{ message }}
+<div class="centered-container">
+  <div class="chat-container">
+    <div class="header">
+      <button class="back-button" (click)="goBack()">Back</button>
+      <h1>Chat Room</h1>
+    </div>
+    <div class="message-display">
+      <div class="message" *ngFor="let message of messages">
+        {{ message }}
+      </div>
+    </div>
+    <div class="input-container">
+      <textarea class="chat-input" #chatInput
+                (keydown.enter)="sendMessage(chatInput.value); chatInput.value='';"
+                placeholder="Type your message here..."></textarea>
+      <button class="send-button" (click)="sendMessage(chatInput.value); chatInput.value='';">Send</button>
     </div>
   </div>
-  <textarea #chatInput (keydown.enter)="sendMessage(chatInput.value); chatInput.value='';"></textarea>
-  <button (click)="sendMessage(chatInput.value); chatInput.value='';">Send</button>
 </div>
