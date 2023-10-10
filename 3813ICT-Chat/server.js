@@ -1,12 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const fs = require('fs');
 const path = require('path');
 const app = express();
 const PORT = 3000;
 const cPath = 'C:/Users/Bojack/Documents/GitHub/3813ICT-3235_Assignment1/3813ICT-Chat/dist/3813-ict-chat';
-
+const { MongoClient } = require('mongodb');
+const fs = require('fs');
+const url = "mongodb://127.0.0.1:27017/";
+const dbName = "yourDatabaseName"; // Replace with your database name
+const client = new MongoClient(url);
 app.use(bodyParser.json());
 
 app.use(express.static(cPath));
@@ -16,44 +19,77 @@ let lastUserId = 0;
 let users = [];
 let groups = [];
 let currentUser = null;
-
-// Function to save users and groups data to JSON files
-function saveDataToJSON() {
-  const data = {
-    users,
-    groups
-  };
-  const jsonContent = JSON.stringify(data, null, 2); // Pretty-print JSON
-
-  fs.writeFileSync('initial_data.json', jsonContent); // Update the initial_data.json file
-}
-
-// Function to load users and groups data from JSON files
-function loadDataFromJSON() {
+async function connectToDB() {
   try {
-    const data = fs.readFileSync('initial_data.json', 'utf8');
-    const jsonData = JSON.parse(data);
-
-    if (jsonData.users) {
-      users = jsonData.users;
-      lastUserId = Math.max(...users.map(u => Number(u.id)));
+    if (client.topology && client.topology.isConnected()) {
+      console.log('Already connected to MongoDB');
+    } else {
+      await client.connect();
+      console.log('Connected to MongoDB');
     }
-
-    if (jsonData.groups) {
-      groups = jsonData.groups;
-    }
-  } catch (error) {
-    console.error('Error loading data from JSON:', error.message);
+  } catch (err) {
+    console.error('Failed to connect to MongoDB', err);
   }
 }
 
-// Load data from JSON files when the server starts
-loadDataFromJSON();
+// Function to save users and groups data to JSON files
+async function saveDataToDB() {
+  try {
+    if (!client.topology || !client.topology.isConnected()) {
+      console.log('Manually connecting...');
+      await connectToDB();
+    }
+    
+    const db = client.db(dbName);
+    const usersCollection = db.collection('users');
+    const groupsCollection = db.collection('groups');
+    
+    await usersCollection.deleteMany({});
+    if (users && users.length > 0) {
+      await usersCollection.insertMany(users);
+    }
 
+    await groupsCollection.deleteMany({});
+    if (groups && groups.length > 0) {
+      await groupsCollection.insertMany(groups);
+    }
+
+    console.log("Data saved to DB");
+  } catch (e) {
+    console.log("Error saving data to DB: ", e);
+  }
+}
+
+
+async function loadDataFromDB() {
+  try {
+    if (!client.topology || !client.topology.isConnected()) {
+      console.log('Manually connecting...');
+      await connectToDB();
+    }
+    
+    const db = client.db(dbName);
+    const usersCollection = db.collection('users');
+    const groupsCollection = db.collection('groups');
+
+    // Fetch data from MongoDB and populate the users and groups arrays
+    users = await usersCollection.find({}).toArray();
+    groups = await groupsCollection.find({}).toArray();
+
+    console.log('Data loaded from DB');
+  } catch (e) {
+    console.log('Error loading data from DB:', e);
+  }
+}
+
+// Load data from MongoDB when the server starts
+loadDataFromDB().catch(console.error);
+
+// Load data from JSON files when the server starts
 function saveDataMiddleware(req, res, next) {
   // Run the route's handler function
   res.on('finish', () => {
-    saveDataToJSON();
+    saveDataToDB();
   });
 
   next(); // Continue to the route's handler
@@ -433,6 +469,7 @@ app.get('/*', saveDataMiddleware, function (req, res) {
 });
 
 // Start the server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
+  await connectToDB();
 });

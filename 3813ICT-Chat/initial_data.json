@@ -21,7 +21,7 @@
       "username": "user",
       "password": "123",
       "email": "user@example.com",
-      "role": "User",
+      "role": "Group Admin",
       "groups": []
     },
     {
@@ -29,7 +29,7 @@
       "username": "newuser1",
       "password": "password1",
       "email": "newuser1@example.com",
-      "role": "User",
+      "role": "Group Admin",
       "groups": []
     },
     {
@@ -38,6 +38,14 @@
       "password": "password2",
       "email": "newuser2@example.com",
       "role": "User",
+      "groups": []
+    },
+    {
+      "id": "6",
+      "username": "user2",
+      "password": "123",
+      "email": "123",
+      "role": "Group Admin",
       "groups": []
     }
   ],
@@ -48,19 +56,31 @@
       "channels": [
         {
           "name": "Channel1",
-          "messages": []
+          "messages": [
+            "test"
+          ]
         },
         {
           "name": "Channel2",
           "messages": []
+        },
+        {
+          "name": "wadwd",
+          "messages": []
         }
       ],
       "admins": [
-        "2"
-      ],
-      "members": [],
-      "requests": [
+        "6",
         "3"
+      ],
+      "members": [
+        "7"
+      ],
+      "requests": [
+        "3",
+        "3",
+        "6",
+        "7"
       ]
     },
     {
@@ -69,12 +89,14 @@
       "channels": [
         {
           "name": "Channel1",
-          "messages": []
+          "messages": [
+            "wasd",
+            "wadwda"
+          ]
         }
       ],
       "admins": [
-        "2",
-        "3"
+        "2"
       ],
       "members": [
         "3"
@@ -94,10 +116,58 @@
         "4"
       ],
       "members": [
-        "4",
         "5"
       ],
-      "requests": []
+      "requests": [
+        "3"
+      ]
+    },
+    {
+      "id": "4",
+      "name": "wasd",
+      "channels": [],
+      "admins": [
+        "6"
+      ],
+      "members": []
+    },
+    {
+      "id": "5",
+      "name": "wdawd",
+      "channels": [],
+      "admins": [
+        "1"
+      ],
+      "members": []
+    },
+    {
+      "id": "6",
+      "name": "awdawd",
+      "channels": [
+        {
+          "name": "create awawda",
+          "messages": [
+            "awdawda",
+            ""
+          ]
+        }
+      ],
+      "admins": [
+        "1",
+        "6"
+      ],
+      "members": [
+        "3"
+      ]
+    },
+    {
+      "id": "7",
+      "name": "wdawd",
+      "channels": [],
+      "admins": [
+        "6"
+      ],
+      "members": []
     }
   ]
 }
