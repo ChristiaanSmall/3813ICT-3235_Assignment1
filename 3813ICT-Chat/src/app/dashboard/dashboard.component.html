@@ -1,6 +1,5 @@
 <div class="container">
   <h1>Dashboard</h1>
-  <input type="file" (change)="uploadProfilePicture($event)" />
 
   <!-- Super Admin Section -->
   <div *ngIf="role === 'Super Admin'" class="admin-controls">
@@ -99,6 +98,10 @@
     <button (click)="deleteOwnAccount()">Delete My Account</button>
 
   </div>
-
+  <div class="file-upload-wrapper">
+    <label class="file-upload-btn">
+      <span>Upload Image</span>
+      <input type="file" (change)="uploadProfilePicture($event)" />
+    </label>                </div>
 </div>
 
