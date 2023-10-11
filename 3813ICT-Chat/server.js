@@ -61,14 +61,16 @@ async function connectToDB() {
 io.on('connection', (socket) => {
   console.log('New user connected');
 
-  socket.on('joinChannel', (channel) => {
+  socket.on('joinChannel', (data) => {
+    const { channel, username } = data;
     socket.join(channel);
-    io.to(channel).emit('userJoined', 'A new user has joined the channel');
+    io.to(channel).emit('userJoined', { text: `${username} has joined the channel` });
   });
 
-  socket.on('leaveChannel', (channel) => {
+  socket.on('leaveChannel', (data) => {
+    const { channel, username } = data;
     socket.leave(channel);
-    io.to(channel).emit('userLeft', 'A user has left the channel');
+    io.to(channel).emit('userLeft', { text: `${username} has left the channel` });
   });
 
   socket.on('sendMessage', (data) => {

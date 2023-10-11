@@ -41,6 +41,8 @@ export class ChatWindowComponent implements OnInit {
       this.authService.getUserById(userId).subscribe(user => {
         this.username = user.username;
       });
+      this.username = user.username;
+      this.joined(this.username);
     }
   
     // Initialize Socket.io
@@ -50,7 +52,8 @@ export class ChatWindowComponent implements OnInit {
         "my-custom-header": "abcd"
       }
     });
-    this.socket.emit('joinChannel', this.channelId);
+    this.socket.emit('joinChannel', { channel: this.channelId, username: this.username });
+
     this.socket.on('newMessage', (message: any) => {
       console.log("Received raw message:", message);
       if (message.text && typeof message.text === 'object') {
@@ -70,13 +73,7 @@ export class ChatWindowComponent implements OnInit {
       }
     });
 
-    this.socket.on('userJoined', (message: Message) => {
-      this.messages.push(message);
-    });
 
-    this.socket.on('userLeft', (message: Message) => {
-      this.messages.push(message);
-    });
   }
 
   getMessages(): Observable<Message[]> {  // Change this line
@@ -116,15 +113,48 @@ export class ChatWindowComponent implements OnInit {
   
         // Send the message to the server
         this.http.post(`${this.apiUrl}/groups/${this.groupId}/channels/${this.channelId}/messages`, { message: newMessage }).subscribe(response => {
-          this.messages.push(newMessage);  // And this line
           this.socket.emit('sendMessage', { channel: this.channelId, message: newMessage });  // And this line
         });
       });
     }
   }
+  systemMessage(message: string, isImage: boolean = false): void {
+    // Fetch the current user's ID from session storage
+    const userData = sessionStorage.getItem('user');
+    const newMessage: Message = isImage ? { imagePath: message } : { text: `*System Message* ${this.username} - ${message}` };  // Correct this line
+
+    if (userData) {
+      const user = JSON.parse(userData);
+      const userId = user.id;
+  
+      // Fetch the username from the server
+      this.authService.getUserById(userId).subscribe(user => {
+        const username = user.username;
+  
+        // Prepend the username to the message
+        message = `SYSYEM MESSAGE | ${message}`;
+  
+        // Send the message to the server
+        this.http.post(`${this.apiUrl}/groups/${this.groupId}/channels/${this.channelId}/messages`, { message: newMessage }).subscribe(response => {
+          this.socket.emit('sendMessage', { channel: this.channelId, message: newMessage });  // And this line
+        });
+      });
+    }
+  }
+  joined(user: string): void {
+    this.systemMessage("HAS JOINED", false);
+    console.log(user);
+  }
+
+  left(): void {
+    this.systemMessage("HAS LEFT", false);
+    console.log("Left");
+  }
 
   goBack(): void {
-    this.socket.emit('leaveChannel', this.channelId);  // Emit leave channel event
+    // Include the username when leaving the channel
+    this.left();
+    this.socket.emit('leaveChannel', { channel: this.channelId, username: this.username });
     this.router.navigate(['/dashboard']);
   }
 }
