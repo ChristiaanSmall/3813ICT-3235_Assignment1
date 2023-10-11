@@ -11,7 +11,7 @@ const cPath = 'C:/Users/Bojack/Documents/GitHub/3813ICT-3235_Assignment1/3813ICT
 const { MongoClient } = require('mongodb');
 const fs = require('fs');
 const url = "mongodb://127.0.0.1:27017/";
-const dbName = "yourDatabaseName"; // Replace with your database name
+const dbName = "yourDatabaseName";
 const client = new MongoClient(url);
 const server = http.createServer(app);
 const io = require('socket.io')(server, {
@@ -22,8 +22,8 @@ const io = require('socket.io')(server, {
   }
 });
 app.use(cors({
-  origin: 'http://localhost:4001', // replace with your application's origin
-  credentials: true // Allow cookies
+  origin: 'http://localhost:4001',
+  credentials: true
 }));
 app.use(bodyParser.json());
 

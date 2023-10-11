@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
 import io, { Socket } from 'socket.io-client';
-
+import { AuthService } from '../auth.service';
 @Component({
   selector: 'app-chat-window',
   templateUrl: './chat-window.component.html',
@@ -17,8 +17,8 @@ export class ChatWindowComponent implements OnInit {
   channelId: string = "";
   private apiUrl = 'http://localhost:4001/api';
   private socket!: Socket;
-  
-  constructor(private route: ActivatedRoute, private http: HttpClient, private router: Router) { }
+  username: string = "";
+  constructor(private route: ActivatedRoute, private http: HttpClient, private router: Router, private authService: AuthService) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -29,7 +29,15 @@ export class ChatWindowComponent implements OnInit {
         this.messages = messages;
       });
     });
-
+    const userData = sessionStorage.getItem('user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      const userId = user.id;  // Replace with the actual user ID
+      this.authService.getUserById(userId).subscribe(user => {
+        this.username = user.username;
+      });
+    }
+  
     // Initialize Socket.io
     this.socket = io('http://localhost:4000', {
       withCredentials: true,
@@ -56,9 +64,29 @@ export class ChatWindowComponent implements OnInit {
   }
 
   sendMessage(message: string): void {
-    this.http.post(`${this.apiUrl}/groups/${this.groupId}/channels/${this.channelId}/messages`, { message }).subscribe(response => {
-      this.socket.emit('sendMessage', { channel: this.channelId, message });  // Emitting the message via Socket.io
-    });
+    // Fetch the current user's ID from session storage
+    const userData = sessionStorage.getItem('user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      const userId = user.id;
+  
+      // Fetch the username from the server
+      this.authService.getUserById(userId).subscribe(user => {
+        const username = user.username;
+  
+        // Prepend the username to the message
+        message = `${username}: ${message}`;
+  
+        // Send the message to the server
+        this.http.post(`${this.apiUrl}/groups/${this.groupId}/channels/${this.channelId}/messages`, { message }).subscribe(response => {
+          // Add the message to the local messages array
+          this.messages.push(message);
+  
+          // Emit the message via Socket.io
+          this.socket.emit('sendMessage', { channel: this.channelId, message });
+        });
+      });
+    }
   }
 
   goBack(): void {
