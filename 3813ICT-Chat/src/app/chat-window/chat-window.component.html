@@ -6,7 +6,10 @@
     </div>
     <div class="message-display">
       <div class="message" *ngFor="let message of messages">
-        {{ message }}
+        <!-- Display text message -->
+        <span *ngIf="message?.text">{{ message?.text }}</span>
+        <!-- Display image -->
+        <img *ngIf="message?.imagePath" [src]="'http://localhost:4001/' + message?.imagePath" alt="Image">
       </div>
     </div>
     <div class="input-container">
@@ -14,6 +17,7 @@
                 (keydown.enter)="sendMessage(chatInput.value); chatInput.value='';"
                 placeholder="Type your message here..."></textarea>
       <button class="send-button" (click)="sendMessage(chatInput.value); chatInput.value='';">Send</button>
+      <input type="file" (change)="uploadImage($event)" />
     </div>
   </div>
 </div>

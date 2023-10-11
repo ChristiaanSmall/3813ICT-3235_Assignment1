@@ -14,6 +14,17 @@ const url = "mongodb://127.0.0.1:27017/";
 const dbName = "yourDatabaseName";
 const client = new MongoClient(url);
 const server = http.createServer(app);
+const multer = require('multer');
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, 'uploads/')
+  },
+  filename: function(req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)) // Appending extension
+  }
+})
+
+const upload = multer({ storage: storage })
 const io = require('socket.io')(server, {
   cors: {
     origin: "http://localhost:4001",
@@ -26,6 +37,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(bodyParser.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(express.static(cPath));
 
@@ -60,7 +72,12 @@ io.on('connection', (socket) => {
   });
 
   socket.on('sendMessage', (data) => {
-    io.to(data.channel).emit('newMessage', data.message);
+    const message = data.isImage ? 
+      { imagePath: data.message } : 
+      { text: data.message };
+  
+    // Emit the new message to all connected clients
+    io.emit('newMessage', message);
   });
 
   socket.on('disconnect', () => {
@@ -229,6 +246,14 @@ app.delete('/api/users/:username', saveDataMiddleware, (req, res) => {
 // Retrieves a list of all groups.
 app.get('/api/groups', saveDataMiddleware, (req, res) => {
   res.json(groups);
+});
+
+// Add a new route to upload images
+app.post('/upload', upload.single('image'), (req, res) => {
+  const filePath = req.file.path;
+  // Store filePath in MongoDB
+  // ...
+  res.json({ filePath });
 });
 
 // API to delete a group

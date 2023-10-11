@@ -120,4 +120,8 @@
   .send-button:hover {
     background-color: #8dc4ff;
   }
+  img {
+    max-width: 200px;
+    max-height: 200px;
+  }
   
