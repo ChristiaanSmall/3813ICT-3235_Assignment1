@@ -57,8 +57,7 @@ export class ChatWindowComponent implements OnInit {
 
   sendMessage(message: string): void {
     this.http.post(`${this.apiUrl}/groups/${this.groupId}/channels/${this.channelId}/messages`, { message }).subscribe(response => {
-      this.messages.push(message);
-      this.socket.emit('sendMessage', { channel: this.channelId, message });  // Emit the message via Socket.io
+      this.socket.emit('sendMessage', { channel: this.channelId, message });  // Emitting the message via Socket.io
     });
   }
 

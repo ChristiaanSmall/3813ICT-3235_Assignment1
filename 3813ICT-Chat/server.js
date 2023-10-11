@@ -14,13 +14,17 @@ const url = "mongodb://127.0.0.1:27017/";
 const dbName = "yourDatabaseName"; // Replace with your database name
 const client = new MongoClient(url);
 const server = http.createServer(app);
-const io = require('socket.io')(server, {  // Use 'server' instead of 'httpServer'
+const io = require('socket.io')(server, {
   cors: {
     origin: "http://localhost:4001",
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
-app.use(cors())
+app.use(cors({
+  origin: 'http://localhost:4001', // replace with your application's origin
+  credentials: true // Allow cookies
+}));
 app.use(bodyParser.json());
 
 app.use(express.static(cPath));
@@ -454,9 +458,12 @@ app.post('/api/groups/requestAccess', saveDataMiddleware, (req, res) => {
   console.log(`Received request for group ID: ${groupId}`);
 
   if (group) {
+    if (!group.requests) {
+      group.requests = [];  // Initialize if undefined
+    }
     group.requests.push(userId);
     console.log(`Added Request`);
-    res.json({ status: 'Request received' }); // This line sends a JSON response
+    res.json({ status: 'Request received' });
   } else {
     console.log(`Group not found`);
     res.status(404).json({ status: 'Group not found' });
