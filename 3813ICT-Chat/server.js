@@ -2,14 +2,25 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const http = require('http');
+const socketIO = require('socket.io');
+const { v4: uuidv4 } = require('uuid');
 const app = express();
-const PORT = 3000;
+const PORT = 4001;
 const cPath = 'C:/Users/Bojack/Documents/GitHub/3813ICT-3235_Assignment1/3813ICT-Chat/dist/3813-ict-chat';
 const { MongoClient } = require('mongodb');
 const fs = require('fs');
 const url = "mongodb://127.0.0.1:27017/";
 const dbName = "yourDatabaseName"; // Replace with your database name
 const client = new MongoClient(url);
+const server = http.createServer(app);
+const io = require('socket.io')(server, {  // Use 'server' instead of 'httpServer'
+  cors: {
+    origin: "http://localhost:4001",
+    methods: ["GET", "POST"]
+  }
+});
+app.use(cors())
 app.use(bodyParser.json());
 
 app.use(express.static(cPath));
@@ -31,7 +42,31 @@ async function connectToDB() {
     console.error('Failed to connect to MongoDB', err);
   }
 }
+io.on('connection', (socket) => {
+  console.log('New user connected');
 
+  socket.on('joinChannel', (channel) => {
+    socket.join(channel);
+    io.to(channel).emit('userJoined', 'A new user has joined the channel');
+  });
+
+  socket.on('leaveChannel', (channel) => {
+    socket.leave(channel);
+    io.to(channel).emit('userLeft', 'A user has left the channel');
+  });
+
+  socket.on('sendMessage', (data) => {
+    io.to(data.channel).emit('newMessage', data.message);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
+
+server.listen(4000, () => {
+  console.log('Server running on port 4000');
+});
 // Function to save users and groups data to JSON files
 async function saveDataToDB() {
   try {
@@ -131,9 +166,8 @@ app.post('/api/register', saveDataMiddleware, (req, res) => {
     return;
   }
 
-  lastUserId++; // Increment the counter
   const newUser = {
-    id: lastUserId.toString(),
+    id: uuidv4(),  // Generate a unique ID
     username,
     password,
     email,
@@ -144,7 +178,6 @@ app.post('/api/register', saveDataMiddleware, (req, res) => {
   users.push(newUser);
   res.json({ message: 'User registered', user: newUser });
 });
-
 // Promotes an existing user to Super Admin role.
 app.post('/api/promoteToSuperAdmin', saveDataMiddleware, (req, res) => {
   const { username } = req.body;

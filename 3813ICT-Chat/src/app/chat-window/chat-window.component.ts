@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
+import io, { Socket } from 'socket.io-client';
 
 @Component({
   selector: 'app-chat-window',
@@ -14,8 +15,9 @@ export class ChatWindowComponent implements OnInit {
   messages: string[] = [];
   groupId: string = "";
   channelId: string = "";
-  private apiUrl = 'http://localhost:3000/api';
-
+  private apiUrl = 'http://localhost:4001/api';
+  private socket!: Socket;
+  
   constructor(private route: ActivatedRoute, private http: HttpClient, private router: Router) { }
 
   ngOnInit(): void {
@@ -27,6 +29,26 @@ export class ChatWindowComponent implements OnInit {
         this.messages = messages;
       });
     });
+
+    // Initialize Socket.io
+    this.socket = io('http://localhost:4000', {
+      withCredentials: true,
+      extraHeaders: {
+        "my-custom-header": "abcd"
+      }
+    });
+    this.socket.emit('joinChannel', this.channelId);
+    this.socket.on('newMessage', (message) => {
+      this.messages.push(message);
+    });
+
+    this.socket.on('userJoined', (message) => {
+      this.messages.push(message);
+    });
+
+    this.socket.on('userLeft', (message) => {
+      this.messages.push(message);
+    });
   }
 
   getMessages(): Observable<string[]> {
@@ -36,10 +58,12 @@ export class ChatWindowComponent implements OnInit {
   sendMessage(message: string): void {
     this.http.post(`${this.apiUrl}/groups/${this.groupId}/channels/${this.channelId}/messages`, { message }).subscribe(response => {
       this.messages.push(message);
+      this.socket.emit('sendMessage', { channel: this.channelId, message });  // Emit the message via Socket.io
     });
   }
+
   goBack(): void {
-    // Replace '/previous-page' with the URL you want to navigate back to
+    this.socket.emit('leaveChannel', this.channelId);  // Emit leave channel event
     this.router.navigate(['/dashboard']);
   }
 }
