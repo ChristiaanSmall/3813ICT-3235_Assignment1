@@ -86,13 +86,12 @@ export class DashboardComponent implements OnInit {
       const file = event.target.files[0];
       const formData = new FormData();
       formData.append('image', file);
-      formData.append('username', username);  // Pass the username here
+      formData.append('username', username);  // Pass the username
     
       this.http.post('http://localhost:4001/api/updateProfilePicture', formData).subscribe(
         (response: any) => {
           console.log("Full response:", response);
           const profilePath = response.profilePath;
-          // Do something with the new profile picture path, e.g., update the user object
         },
         (error) => {
           console.log("Error:", error);

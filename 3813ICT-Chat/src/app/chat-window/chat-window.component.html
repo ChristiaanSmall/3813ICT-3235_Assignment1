@@ -4,14 +4,10 @@
       <button class="back-button" (click)="goBack()">Back</button>
       <h1>Chat Room</h1>
     </div>
-    
     <div class="message-display">
-      <div class="message" *ngFor="let message of (messages$ | async)">
-        <!-- Display profile picture -->
-        <img [src]="'http://localhost:4001/' + message?.profilePicturePath" alt="Profile Picture" class="profile-picture">
-        <!-- Display text message -->
+      <div class="message" *ngFor="let message of messages$ | async">
+        <img *ngIf="message?.profilePicturePath" [src]="'http://localhost:4001/' + message?.profilePicturePath" alt="Profile Picture" class="profile-picture">
         <span *ngIf="message?.text">{{ message?.text }}</span>
-        <!-- Display image -->
         <img *ngIf="message?.imagePath" [src]="'http://localhost:4001/' + message?.imagePath" alt="Image">
       </div>
     </div>
@@ -19,8 +15,12 @@
       <textarea class="chat-input" #chatInput
                 (keydown.enter)="sendMessage(chatInput.value); chatInput.value='';"
                 placeholder="Type your message here..."></textarea>
+                <div class="file-upload-wrapper">
+                  <label class="file-upload-btn">
+                    <span>Upload Image</span>
+                    <input type="file" (change)="uploadImage($event)" style="display: none;">
+                  </label>                </div>
       <button class="send-button" (click)="sendMessage(chatInput.value); chatInput.value='';">Send</button>
-      <input type="file" (change)="uploadImage($event)" />
     </div>
   </div>
 </div>

@@ -9,8 +9,7 @@ import { BehaviorSubject } from 'rxjs';
 interface Message {
   text?: string;
   imagePath?: string;
-  profilePicturePath?: string;
-  uniqueId?: string;  // Add this line
+  profilePicturePath?: string; // Add this line
 }
 
 @Component({
@@ -27,7 +26,6 @@ export class ChatWindowComponent implements OnInit {
   private apiUrl = 'http://localhost:4001/api';
   private socket!: Socket;
   username: string = "";
-  
   constructor(private cdr: ChangeDetectorRef, private route: ActivatedRoute, private http: HttpClient, private router: Router, private authService: AuthService) { }
 
   ngOnInit(): void {
@@ -36,20 +34,18 @@ export class ChatWindowComponent implements OnInit {
       this.channelId = params['channelId'];
     
       this.getMessages().subscribe(messages => {
-        this.messagesSubject.next(messages);
+        this.messagesSubject.next(messages);  // Update this line
       });
     });
-  
+
     const userData = sessionStorage.getItem('user');
     if (userData) {
       const user = JSON.parse(userData);
-      const userId = user.id;
+      const userId = user.id;  // Replace with the actual user ID
       this.authService.getUserById(userId).subscribe(user => {
         this.username = user.username;
-        // Check if the user has a profile picture, if not set a default one
-        this.profilePicturePath = user.profilePicture ? user.profilePicture : 'uploads/1697038491289.jpg';
-        console.log("Profile Picture Path:", this.profilePicturePath);  // Debugging line
-        this.cdr.detectChanges();  // Manually check for changes
+        this.profilePicturePath = user.profilePicture; // Assume the user object has a field 'profilePicturePath'
+        console.log(this.profilePicturePath);
       });
       this.username = user.username;
       this.joined(this.username);
@@ -64,9 +60,6 @@ export class ChatWindowComponent implements OnInit {
     this.socket.emit('joinChannel', { channel: this.channelId, username: this.username });
 
     this.socket.on('newMessage', (message: any) => {
-      if (message.username && message.username === this.username) {
-        return;
-      }
       console.log("Received raw message:", message);
     
       // Create a new message object to hold the incoming data
@@ -111,44 +104,25 @@ export class ChatWindowComponent implements OnInit {
     const file = event.target.files[0];
     const formData = new FormData();
     formData.append('image', file);
-  
+
     this.http.post('http://localhost:4001/upload', formData).subscribe(
       (response: any) => {
+        console.log("Full response:", response);  // Debugging line
         const imagePath = response.filePath;
-        console.log("Image Path: ", imagePath);  // Debugging line
-  
         this.sendMessage(imagePath, true);
-  
-        // Update the messagesSubject to trigger change detection
-        const currentMessages = this.messagesSubject.getValue();
-        const newMessage: Message = { imagePath: imagePath, profilePicturePath: this.profilePicturePath };
-        currentMessages.push(newMessage);
-        this.messagesSubject.next([...currentMessages]);
-  
-        this.cdr.detectChanges();  // Manually check for changes
       },
       (error) => {
-        console.log("Error:", error);
+        console.log("Error:", error);  // Debugging line
       }
     );
   }
-  sendMessage(message: string, isImage: boolean = false, uniqueId?: string): void {
+  sendMessage(message: string, isImage: boolean = false): void {
     // Fetch the current user's ID from session storage
     const userData = sessionStorage.getItem('user');
-    
-    // Create a new message object
     const newMessage: Message = isImage ? 
-    { 
-      imagePath: message, 
-      profilePicturePath: this.profilePicturePath,
-      uniqueId: uniqueId  // Add the unique ID here
-    } : 
-    { 
-      text: `${this.username}: ${message}`, 
-      profilePicturePath: this.profilePicturePath,
-      uniqueId: uniqueId  // Add the unique ID here
-    };
-  
+    { imagePath: message, profilePicturePath: this.profilePicturePath } : 
+    { text: `${this.username}: ${message}`, profilePicturePath: this.profilePicturePath };
+
     if (userData) {
       const user = JSON.parse(userData);
       const userId = user.id;
@@ -162,11 +136,11 @@ export class ChatWindowComponent implements OnInit {
   
         // Send the message to the server
         this.http.post(`${this.apiUrl}/groups/${this.groupId}/channels/${this.channelId}/messages`, { message: newMessage }).subscribe(response => {
-          // Emit the message through the socket
-          this.socket.emit('sendMessage', { channel: this.channelId, message: newMessage });
+          this.socket.emit('sendMessage', { channel: this.channelId, message: newMessage });  // And this line
         });
       });
     }
+    this.cdr.detectChanges();
   }
   systemMessage(message: string, isImage: boolean = false): void {
     // Fetch the current user's ID from session storage
@@ -192,6 +166,7 @@ export class ChatWindowComponent implements OnInit {
         });
       });
     }
+    this.cdr.detectChanges();
   }
   joined(user: string): void {
     this.systemMessage("HAS JOINED", false);

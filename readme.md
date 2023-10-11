@@ -28,13 +28,23 @@ Each branch in the repository is a feature branch, dedicated to implementing a s
 6. **Base-UI-and-Routing**: 
    - Establishes the foundational user interface and routing configurations.
 
+7. **Sockets Chat**:
+   - Chat functionality for the channels where uses can communicate.
+
+8. **Data Stored on Mongo DB**:
+   - Data is now saved in Mongo DB.
+
+9. **Added Images and Profile Pictures**
+   - Added Images and profile pictures that users can send / edit.
+
+
 ## Update Frequency
 
 Multiple commits are made to various feature branches each day, indicating an agile and active development process.
 
 ## Frontend/Backend Code Organization
 
-Frontend code, developed using Angular, and backend code, built on Node.js with Express, are organized into distinct folders within the repository.
+Frontend code, developed using Angular, and backend code, built on Node.js with Express, are organized into distinct folders within the repository. Data stored with MongoDB and communcication done through Sockets.io
 
 # Data Structures
 
@@ -46,6 +56,7 @@ Frontend code, developed using Angular, and backend code, built on Node.js with 
 - `email`: String - Email associated with the user.
 - `role`: String - Specifies if the user is a 'Super Admin', 'Group Admin', or 'User'.
 - `groups`: Array of Strings - IDs of groups that the user belongs to.
+- `profilePictures`: string of image file location and name.
 
 ## Groups
 
@@ -60,7 +71,9 @@ Frontend code, developed using Angular, and backend code, built on Node.js with 
 
 - `name`: String - Name of the individual channel within a group.
 - `messages`: Array - Contains the messages sent within the channel.
-
+   -  `text`: text for each message
+   -  `profilePicturePath`: profile picture for each message
+   - `image`: image sent by user
 ---
 
 
@@ -172,6 +185,14 @@ Catches all undefined paths and redirects the user to the `LoginComponent`.
 
 ---
 
+### `POST /api/updateProfilePicture`
+
+- **Purpose**: Add Profile Path for users.
+- **Response**: JSON array containing all users.
+- **Use-Case**: Adds the profile picture string for users.
+
+---
+
 ### `GET /api/users`
 
 - **Purpose**: Get all users.
@@ -179,7 +200,6 @@ Catches all undefined paths and redirects the user to the `LoginComponent`.
 - **Use-Case**: Fetch all users for administrative purposes.
 
 ---
-
 ### `GET /api/users/:id`
 
 - **Purpose**: Get user information based on user ID.
@@ -238,6 +258,15 @@ Catches all undefined paths and redirects the user to the `LoginComponent`.
 - **Request Body**: JSON containing `name`.
 - **Response**: JSON message 'Channel created' on success; 404 Not Found with message 'Group not found' on failure.
 - **Use-Case**: Add a new channel to a group.
+
+---
+
+### `POST /upload`
+
+- **Purpose**: Upload Image to DB
+- **Request Body**: JSON containing `image`.
+- **Response**: Stored filePath.
+- **Use-Case**: Add a new image into the DB.
 
 ---
 
