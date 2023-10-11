@@ -257,6 +257,44 @@ app.post('/upload', upload.single('image'), (req, res) => {
   // ...
   res.json({ filePath });
 });
+// Update the profile picture file path for an existing user.
+app.post('/api/updateProfilePicture', upload.single('image'), async (req, res) => {
+  const username = req.body.username;
+  const profilePath = req.file ? req.file.path : null;
+
+  try {
+    const user = users.find(u => u.username === username);
+
+    if (!user || !profilePath) {
+      return res.status(404).json({ message: 'User or image not found' });
+    }
+
+    user.profilePicture = profilePath;
+
+    if (!client.topology || !client.topology.isConnected()) {
+      console.log('Manually connecting to MongoDB...');
+      await connectToDB();
+    }
+
+    const db = client.db(dbName);
+    const usersCollection = db.collection('users');
+
+    const updatedUser = await usersCollection.findOneAndUpdate(
+      { username },
+      { $set: { profilePicture: profilePath } },
+      { returnOriginal: false }
+    );
+
+    if (updatedUser.value) {
+      res.json({ message: 'Profile picture updated successfully', profilePath });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Error updating profile picture:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 // API to delete a group
 app.delete('/api/groups/:groupId', saveDataMiddleware, (req, res) => {

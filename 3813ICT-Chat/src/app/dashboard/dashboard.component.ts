@@ -4,6 +4,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-dashboard',
@@ -26,7 +27,8 @@ export class DashboardComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) { }
 
   ngOnInit(): void {
@@ -77,6 +79,30 @@ export class DashboardComponent implements OnInit {
     );
   }
 
+
+  uploadProfilePicture(event: any): void {
+    if (this.currentUser) {
+      const username = this.currentUser.username;  // Grab username from currentUser object
+      const file = event.target.files[0];
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('username', username);  // Pass the username here
+    
+      this.http.post('http://localhost:4001/api/updateProfilePicture', formData).subscribe(
+        (response: any) => {
+          console.log("Full response:", response);
+          const profilePath = response.profilePath;
+          // Do something with the new profile picture path, e.g., update the user object
+        },
+        (error) => {
+          console.log("Error:", error);
+        }
+      );
+    } else {
+      console.log("No current user found.");
+    }
+  }
+  
   isUserInGroup(group: any): boolean {
     console.log('Checking if user is in group:', group);
     console.log('Current User ID:', this.currentUserId);

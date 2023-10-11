@@ -6,8 +6,12 @@
     </div>
     <div class="message-display">
       <div class="message" *ngFor="let message of messages">
+        <!-- Display profile picture -->
+        <img *ngIf="profilePicturePath" [src]="'http://localhost:4001/' + profilePicturePath" alt="Profile Picture" class="profile-picture">
+        
         <!-- Display text message -->
         <span *ngIf="message?.text">{{ message?.text }}</span>
+        
         <!-- Display image -->
         <img *ngIf="message?.imagePath" [src]="'http://localhost:4001/' + message?.imagePath" alt="Image">
       </div>

@@ -16,7 +16,7 @@ interface Message {
   styleUrls: ['./chat-window.component.css']
 })
 export class ChatWindowComponent implements OnInit {
-  
+  profilePicturePath: string = ''; 
   messages: Message[] = [];
   groupId: string = "";
   channelId: string = "";
