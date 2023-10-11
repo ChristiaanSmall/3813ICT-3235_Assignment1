@@ -1,4 +1,4 @@
-# 3813ICT-3235_Assignment1 - Chat System
+# 3813ICT-3235_Assignment2 - Chat System
 
 ## Repository Structure
 
