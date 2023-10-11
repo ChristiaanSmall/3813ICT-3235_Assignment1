@@ -4,14 +4,13 @@
       <button class="back-button" (click)="goBack()">Back</button>
       <h1>Chat Room</h1>
     </div>
+    
     <div class="message-display">
-      <div class="message" *ngFor="let message of messages">
+      <div class="message" *ngFor="let message of (messages$ | async)">
         <!-- Display profile picture -->
-        <img *ngIf="profilePicturePath" [src]="'http://localhost:4001/' + profilePicturePath" alt="Profile Picture" class="profile-picture">
-        
+        <img [src]="'http://localhost:4001/' + message?.profilePicturePath" alt="Profile Picture" class="profile-picture">
         <!-- Display text message -->
         <span *ngIf="message?.text">{{ message?.text }}</span>
-        
         <!-- Display image -->
         <img *ngIf="message?.imagePath" [src]="'http://localhost:4001/' + message?.imagePath" alt="Image">
       </div>

@@ -75,9 +75,9 @@ io.on('connection', (socket) => {
 
   socket.on('sendMessage', (data) => {
     const message = data.isImage ? 
-      { imagePath: data.message } : 
-      { text: data.message };
-  
+      { imagePath: data.message, profilePicturePath: data.profilePicturePath } : 
+      { text: data.message, profilePicturePath: data.profilePicturePath };
+    
     // Emit the new message to all connected clients
     io.emit('newMessage', message);
   });

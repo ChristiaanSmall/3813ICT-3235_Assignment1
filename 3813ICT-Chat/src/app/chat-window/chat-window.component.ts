@@ -1,13 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import io, { Socket } from 'socket.io-client';
 import { AuthService } from '../auth.service';
+import { BehaviorSubject } from 'rxjs';
 
 interface Message {
   text?: string;
   imagePath?: string;
+  profilePicturePath?: string;
+  uniqueId?: string;  // Add this line
 }
 
 @Component({
@@ -17,34 +20,40 @@ interface Message {
 })
 export class ChatWindowComponent implements OnInit {
   profilePicturePath: string = ''; 
-  messages: Message[] = [];
+  messagesSubject: BehaviorSubject<Message[]> = new BehaviorSubject<Message[]>([]);
+  messages$: Observable<Message[]> = this.messagesSubject.asObservable();
   groupId: string = "";
   channelId: string = "";
   private apiUrl = 'http://localhost:4001/api';
   private socket!: Socket;
   username: string = "";
-  constructor(private route: ActivatedRoute, private http: HttpClient, private router: Router, private authService: AuthService) { }
+  
+  constructor(private cdr: ChangeDetectorRef, private route: ActivatedRoute, private http: HttpClient, private router: Router, private authService: AuthService) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.groupId = params['groupId'];
       this.channelId = params['channelId'];
-
+    
       this.getMessages().subscribe(messages => {
-        this.messages = messages;
+        this.messagesSubject.next(messages);
       });
     });
+  
     const userData = sessionStorage.getItem('user');
     if (userData) {
       const user = JSON.parse(userData);
-      const userId = user.id;  // Replace with the actual user ID
+      const userId = user.id;
       this.authService.getUserById(userId).subscribe(user => {
         this.username = user.username;
+        // Check if the user has a profile picture, if not set a default one
+        this.profilePicturePath = user.profilePicture ? user.profilePicture : 'uploads/1697038491289.jpg';
+        console.log("Profile Picture Path:", this.profilePicturePath);  // Debugging line
+        this.cdr.detectChanges();  // Manually check for changes
       });
       this.username = user.username;
       this.joined(this.username);
     }
-  
     // Initialize Socket.io
     this.socket = io('http://localhost:4000', {
       withCredentials: true,
@@ -55,22 +64,41 @@ export class ChatWindowComponent implements OnInit {
     this.socket.emit('joinChannel', { channel: this.channelId, username: this.username });
 
     this.socket.on('newMessage', (message: any) => {
+      if (message.username && message.username === this.username) {
+        return;
+      }
       console.log("Received raw message:", message);
+    
+      // Create a new message object to hold the incoming data
+      let newMessage: Message = {};
+    
       if (message.text && typeof message.text === 'object') {
         console.log("Text field:", message.text.text);
-        this.messages.push({ text: message.text.text });
+        newMessage.text = message.text.text;
       } else if (message.text) {
         console.log("Text field:", message.text);
-        this.messages.push({ text: message.text });
+        newMessage.text = message.text;
       }
-
+    
       if (message.imagePath) {
         console.log("ImagePath field:", message.imagePath);
-
         message.imagePath = message.imagePath?.replace(/\\/g, '/');
         console.log("ImagePath field:", message.imagePath);
-        this.messages.push({ imagePath: message.imagePath });
+        newMessage.imagePath = message.imagePath;
       }
+    
+      // Handle profile picture path if it exists
+      if (message.profilePicturePath) {
+        console.log("ProfilePicturePath field:", message.profilePicturePath);
+        newMessage.profilePicturePath = message.profilePicturePath;
+      }
+    
+      // Push the new message object to the messages array
+      const currentMessages = this.messagesSubject.getValue();
+      currentMessages.push(newMessage);
+    
+      // Assign a new array to trigger change detection
+      this.messagesSubject.next([...currentMessages]);
     });
 
 
@@ -83,23 +111,44 @@ export class ChatWindowComponent implements OnInit {
     const file = event.target.files[0];
     const formData = new FormData();
     formData.append('image', file);
-
+  
     this.http.post('http://localhost:4001/upload', formData).subscribe(
       (response: any) => {
-        console.log("Full response:", response);  // Debugging line
         const imagePath = response.filePath;
+        console.log("Image Path: ", imagePath);  // Debugging line
+  
         this.sendMessage(imagePath, true);
+  
+        // Update the messagesSubject to trigger change detection
+        const currentMessages = this.messagesSubject.getValue();
+        const newMessage: Message = { imagePath: imagePath, profilePicturePath: this.profilePicturePath };
+        currentMessages.push(newMessage);
+        this.messagesSubject.next([...currentMessages]);
+  
+        this.cdr.detectChanges();  // Manually check for changes
       },
       (error) => {
-        console.log("Error:", error);  // Debugging line
+        console.log("Error:", error);
       }
     );
   }
-  sendMessage(message: string, isImage: boolean = false): void {
+  sendMessage(message: string, isImage: boolean = false, uniqueId?: string): void {
     // Fetch the current user's ID from session storage
     const userData = sessionStorage.getItem('user');
-    const newMessage: Message = isImage ? { imagePath: message } : { text: `${this.username}: ${message}` };  // Correct this line
-
+    
+    // Create a new message object
+    const newMessage: Message = isImage ? 
+    { 
+      imagePath: message, 
+      profilePicturePath: this.profilePicturePath,
+      uniqueId: uniqueId  // Add the unique ID here
+    } : 
+    { 
+      text: `${this.username}: ${message}`, 
+      profilePicturePath: this.profilePicturePath,
+      uniqueId: uniqueId  // Add the unique ID here
+    };
+  
     if (userData) {
       const user = JSON.parse(userData);
       const userId = user.id;
@@ -113,7 +162,8 @@ export class ChatWindowComponent implements OnInit {
   
         // Send the message to the server
         this.http.post(`${this.apiUrl}/groups/${this.groupId}/channels/${this.channelId}/messages`, { message: newMessage }).subscribe(response => {
-          this.socket.emit('sendMessage', { channel: this.channelId, message: newMessage });  // And this line
+          // Emit the message through the socket
+          this.socket.emit('sendMessage', { channel: this.channelId, message: newMessage });
         });
       });
     }
@@ -121,7 +171,9 @@ export class ChatWindowComponent implements OnInit {
   systemMessage(message: string, isImage: boolean = false): void {
     // Fetch the current user's ID from session storage
     const userData = sessionStorage.getItem('user');
-    const newMessage: Message = isImage ? { imagePath: message } : { text: `*System Message* ${this.username} - ${message}` };  // Correct this line
+    const newMessage: Message = isImage ? 
+    { imagePath: message, profilePicturePath: this.profilePicturePath } : 
+    { text: `*System Message* ${this.username} - ${message}`, profilePicturePath: this.profilePicturePath };
 
     if (userData) {
       const user = JSON.parse(userData);
